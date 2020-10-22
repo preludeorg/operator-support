@@ -6,7 +6,7 @@ A public spot to report issues and request features.
 
 Find a bug in the system? Report it through the issues tab. 
 
-> If you find a security-related bug, please report that privately to support@prelude.org with "security bug" in the subject.
+> If you find a security-related bug, please disclose it privately to support@prelude.org with "security bug" in the subject.
 
 ## Request a feature
 
