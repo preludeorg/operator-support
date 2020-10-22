@@ -14,4 +14,4 @@ Have a feature idea? Request it through the issues tab.
 
 ## Ask for help
 
-Have a question that may not be covered here? Send us an email at support@prelude.org with "help needed" in the subject.
+Have a question that may not be suitable here? Send us an email at support@prelude.org with "help needed" in the subject.
