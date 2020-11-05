@@ -1,6 +1,8 @@
 # Operator Support
 
-A public spot to report issues and request features.
+Operator is an autonomous adversary emulation platform, built by [Prelude](https://prelude.org)
+
+This repository is a public spot to report issues and request features.
 
 ## Report a bug
 
