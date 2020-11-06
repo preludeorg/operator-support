@@ -1,3 +1,4 @@
+[![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&query=version&url=https%3A%2F%2Fraw.githubusercontent.com%2Fpreludeorg%2Foperator%2Fmaster%2Fpackage.json%3Ftoken%3DAKJE5VYA4SDGFXIVF7XLDPS7VW72C)](https://github.com/preludeorg/operator-support/releases/latest)
 # Operator Support
 
 Operator is an autonomous adversary emulation platform, built by [Prelude](https://prelude.org)
