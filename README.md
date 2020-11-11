@@ -1,9 +1,14 @@
 [![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&query=version&url=https%3A%2F%2Fraw.githubusercontent.com%2Fpreludeorg%2Foperator%2Fmaster%2Fpackage.json%3Ftoken%3DAKJE5VYA4SDGFXIVF7XLDPS7VW72C)](https://github.com/preludeorg/operator-support/releases/latest)
 # Operator Support
 
-Operator is an autonomous adversary emulation platform, built by [Prelude](https://prelude.org)
+Operator is an autonomous adversary emulation platform, built by [Prelude](https://prelude.org). You can download the latest copy of the platform [here](https://www.prelude.org/download/current).
 
 This repository is a public spot to report issues and request features.
+
+Here are the open-source repositories the platform hooks into:
+
+- [Pneuma](https://github.com/preludeorg/pneuma): A cross-platform agent
+- [Community](https://github.com/preludeorg/community): A collection of attack procedures
 
 ## Report a bug
 
