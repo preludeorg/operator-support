@@ -1,4 +1,4 @@
-[![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fdownload.prelude.org%2Fversion)](https://github.com/preludeorg/operator/releases/latest)
+[![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fdownload.prelude.org%2Fversion)](https://github.com/preludeorg/operator-support/releases)
 # Operator Support
 
 Operator is an autonomous adversary emulation platform, built by [Prelude](https://prelude.org). You can download the latest copy of the platform [here](https://www.prelude.org/download/current).
