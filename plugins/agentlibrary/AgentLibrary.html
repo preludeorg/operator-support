@@ -1,0 +1,135 @@
+<style>
+    .agent-card {
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: row;
+        padding: 30px;
+        width: 48%;
+        min-height: 130px;
+        margin: 20px 10px;
+        transition: all 0.5s ease;
+    }
+    .agent-card:hover {
+        box-shadow: 8px 28px 50px rgba(39, 44, 49, 0.07),
+        1px 6px 12px rgba(39, 44, 49, 0.04);
+        transform: translate3D(0, -1px, 0) scale(1.02);
+        transition: all 0.5s ease;
+        background-color: #1c1c1c;
+    }
+    .profile_img {
+        width: 80px;
+        height: 80px;
+        background-image: url("../static/assets/AppIcon.png");
+        background-size: cover;
+    }
+    .left {
+        margin-right: 15px;
+    }
+    .right {
+        margin-left: 15px;
+    }
+    .items {
+        margin: 10px;
+    }
+    .items_title {
+        margin: 10px;
+    }
+    .interests_item {
+        padding: 5px 15px;
+        margin-right: 5px;
+        background-color: #666;
+        border-radius: 5px;
+    }
+    a {
+        text-decoration: none;
+        color: white;
+    }
+    a[href] {
+        background: transparent url('../static/assets/download-icon.svg') center left no-repeat;
+        padding-left: 18px;
+    }
+</style>
+
+<h2>Agent Library</h2>
+<h4>Meet the agents available under your license</h4>
+<div class="profile-heading-container">
+    <div class="body">
+        <strong class="profile-heading">Select an Agent</strong>
+        <p>Agents are the lifeblood of Operator. Start an agent on any computer to connect it to Operator, allowing you to run security assessments against the machine. Make sure you have permission from the computer owner beforehand.</p>
+    </div>
+</div>
+
+<ul id="agent-listing" class="horizontal-list"></ul>
+
+<li id="agent-template" class="agent-card" style="display:none">
+    <div class="left">
+        <img class="profile_img"/>
+    </div>
+    <div class="right">
+        <h2 id="agent-name" class="name"></h2>
+        <p id="agent-description"></p>
+        <div class="items">
+            <h4 class="items_title">Platforms:</h4>
+            <ul id="agent-platforms"></ul>
+            <br><br>
+        </div>
+        <div class="items">
+            <h4 class="items_title">Protocols:</h4>
+            <ul id="agent-protocols"></ul>
+        </div>
+    </div>
+</li>
+
+<script>
+    $(document).ready(function () {
+        let agents = $("#agent-listing")
+        agents.empty()
+        SETTINGS.account.agents.forEach(a => {
+            let template = $('#agent-template').clone()
+            template.attr('id', `agent-${a.name}`)
+            template.find('#agent-name').text(a.name)
+            const describe = a.package ? 'Download by clicking a platform below' : 'Built into Operator and requires no download'
+            template.find('#agent-description').text(describe)
+            a.platforms.forEach(p => {
+                const platform = a.package ? `<a href="#" onClick="downloadAgent('${a.package}', '${p}')">${p}</a>` : p
+                template.find('#agent-platforms').append(`<li><span class="interests_item">${platform}</span></li>`)
+            })
+            a.protocols.forEach(p => {
+                template.find('#agent-protocols').append(`<li><span class="interests_item">${p}</span></li>`)
+            })
+            template.show()
+            agents.append(template)
+        })
+    })
+
+    function downloadAgent(agent, platform) {
+        let filename = `${agent}-${platform}`
+        fetch(`https://s3.amazonaws.com/operator.payloads/${agent}/${filename}`)
+            .then((res) => {
+                if (res.status === 200) {
+                    return res.blob()
+                }
+            })
+            .then((blob) => blob.arrayBuffer())
+            .then((data) => {
+                let dir = getDownloadDir()
+                let target = path.join(dir, `${filename}`)
+                storeData(Buffer.from(data), target)
+                fs.chmodSync(target, '755')
+                showNotification('Downloaded File', `Downloaded ${filename} to ${dir}`)
+            })
+            .catch((e) => showNotification('Download Failed', `Could not download ${filename}`))
+    }
+
+    function getDownloadDir() {
+        switch (os.platform()) {
+            case 'darwin':
+                return `${process.env.HOME}/Downloads`
+            case 'linux':
+                return '/tmp'
+            case 'win32':
+                return 'C:\\Users\\Public'
+        }
+    }
+</script>
