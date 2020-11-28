@@ -10,6 +10,12 @@ Here are the open-source repositories the platform hooks into:
 - [Pneuma](https://github.com/preludeorg/pneuma): A cross-platform agent
 - [Community](https://github.com/preludeorg/community): A collection of attack procedures
 
+## Plugins
+
+Inside this space, you will find the open-source plugins that are supported within Operator. Plugins are extensions to the 
+Operator platform and allow you to add or overwrite behavior inside the application. Download plugins from here and upload 
+them into your Operator's plugins section.
+
 ## Report a bug
 
 Find a bug in the system? Report it through the issues tab. 

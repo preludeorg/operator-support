@@ -92,7 +92,7 @@
             const describe = a.package ? 'Download by clicking a platform below' : 'Built into Operator and requires no download'
             template.find('#agent-description').text(describe)
             a.platforms.forEach(p => {
-                const platform = a.package ? `<a href="#" onClick="downloadAgent('${a.package}', '${p}')">${p}</a>` : p
+                const platform = a.package ? `<a href="#" onClick="downloadFile('https://s3.amazonaws.com/operator.payloads/${a.package}/${a.package}-${p}', '${a.package}-${p}')">${p}</a>` : p
                 template.find('#agent-platforms').append(`<li><span class="interests_item">${platform}</span></li>`)
             })
             a.protocols.forEach(p => {
@@ -102,34 +102,4 @@
             agents.append(template)
         })
     })
-
-    function downloadAgent(agent, platform) {
-        let filename = `${agent}-${platform}`
-        fetch(`https://s3.amazonaws.com/operator.payloads/${agent}/${filename}`)
-            .then((res) => {
-                if (res.status === 200) {
-                    return res.blob()
-                }
-            })
-            .then((blob) => blob.arrayBuffer())
-            .then((data) => {
-                let dir = getDownloadDir()
-                let target = path.join(dir, `${filename}`)
-                storeData(Buffer.from(data), target)
-                fs.chmodSync(target, '755')
-                showNotification('Downloaded File', `Downloaded ${filename} to ${dir}`)
-            })
-            .catch((e) => showNotification('Download Failed', `Could not download ${filename}`))
-    }
-
-    function getDownloadDir() {
-        switch (os.platform()) {
-            case 'darwin':
-                return `${process.env.HOME}/Downloads`
-            case 'linux':
-                return '/tmp'
-            case 'win32':
-                return 'C:\\Users\\Public'
-        }
-    }
 </script>
