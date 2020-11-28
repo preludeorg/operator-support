@@ -23,18 +23,6 @@
         background-image: url("../static/assets/AppIcon.png");
         background-size: cover;
     }
-    .left {
-        margin-right: 15px;
-    }
-    .right {
-        margin-left: 15px;
-    }
-    .items {
-        margin: 10px;
-    }
-    .items_title {
-        margin: 10px;
-    }
     .interests_item {
         padding: 5px 15px;
         margin-right: 5px;
@@ -63,21 +51,17 @@
 <ul id="agent-listing" class="horizontal-list"></ul>
 
 <li id="agent-template" class="agent-card" style="display:none">
-    <div class="left">
-        <img class="profile_img"/>
+    <img class="profile_img"/>
+    <h2 id="agent-name"></h2>
+    <p id="agent-description"></p>
+    <div>
+        <h4>Platforms:</h4>
+        <ul id="agent-platforms"></ul>
+        <br><br>
     </div>
-    <div class="right">
-        <h2 id="agent-name" class="name"></h2>
-        <p id="agent-description"></p>
-        <div class="items">
-            <h4 class="items_title">Platforms:</h4>
-            <ul id="agent-platforms"></ul>
-            <br><br>
-        </div>
-        <div class="items">
-            <h4 class="items_title">Protocols:</h4>
-            <ul id="agent-protocols"></ul>
-        </div>
+    <div>
+        <h4>Protocols:</h4>
+        <ul id="agent-protocols"></ul>
     </div>
 </li>
 
