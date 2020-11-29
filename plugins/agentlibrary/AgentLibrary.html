@@ -1,0 +1,48 @@
+<h2>Agent Library</h2>
+<h4>Meet the agents available under your license</h4>
+<div class="profile-heading-container">
+    <div class="body">
+        <strong class="profile-heading">Select an Agent</strong>
+        <p>Agents are the lifeblood of Operator. Start an agent on any computer to connect it to Operator, allowing you to run security assessments against the machine. Make sure you have permission from the computer owner beforehand.</p>
+    </div>
+</div>
+
+<ul id="agent-listing" class="horizontal-list"></ul>
+
+<li id="agent-template" class="box-card" style="display:none">
+    <img class="profile_img"/>
+    <h2 id="agent-name"></h2>
+    <p id="agent-description"></p>
+    <div>
+        <h4>Platforms:</h4>
+        <ul id="agent-platforms"></ul>
+        <br><br>
+    </div>
+    <div>
+        <h4>Protocols:</h4>
+        <ul id="agent-protocols"></ul>
+    </div>
+</li>
+
+<script>
+    $(document).ready(function () {
+        let agents = $("#agent-listing")
+        agents.empty()
+        SETTINGS.account.agents.forEach(a => {
+            let template = $('#agent-template').clone()
+            template.attr('id', `agent-${a.name}`)
+            template.find('#agent-name').text(a.name)
+            const describe = a.package ? 'Download by clicking a platform below' : 'Built into Operator and requires no download'
+            template.find('#agent-description').text(describe)
+            a.platforms.forEach(p => {
+                const platform = a.package ? `<a href="#" onClick="downloadFile('https://s3.amazonaws.com/operator.payloads/${a.package}/${a.package}-${p}', '${a.package}-${p}')">${p}</a>` : p
+                template.find('#agent-platforms').append(`<li><span class="tag_item">${platform}</span></li>`)
+            })
+            a.protocols.forEach(p => {
+                template.find('#agent-protocols').append(`<li><span class="tag_item">${p}</span></li>`)
+            })
+            template.show()
+            agents.append(template)
+        })
+    })
+</script>
