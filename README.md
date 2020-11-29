@@ -13,8 +13,8 @@ Here are the open-source repositories the platform hooks into:
 ## Plugins
 
 Inside this space, you will find the open-source plugins that are supported within Operator. Plugins are extensions to the 
-Operator platform and allow you to add or overwrite behavior inside the application. Download plugins from here and upload 
-them into your Operator's plugins section.
+Operator platform and allow you to add or overwrite behavior inside the application. Plugins here will automatically be available for installation
+via Operator's plugin section.
 
 ## Report a bug
 
