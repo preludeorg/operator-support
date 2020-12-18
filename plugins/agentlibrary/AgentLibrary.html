@@ -34,7 +34,7 @@
             const describe = a.package ? 'Download by clicking a platform below' : 'Built into Operator and requires no download'
             template.find('#agent-description').text(describe)
             template.find('#agent-platforms').append(a.platforms.map(p => a.package
-                ? $(`<a href="#" onClick="downloadFile('https://s3.amazonaws.com/operator.payloads/${a.package}/${a.package}-${p}', '${a.package}-${p}')">${p}</a>`)
+                ? $(`<a href="#" onClick="downloadFile('https://s3.amazonaws.com/operator.payloads/${a.package}/${a.package}-${p}', '${a.package}-${p == 'windows' ? `${p}.exe` : p}')">${p}</a>`)
                 : $(`<span>${p}</span>`)))
             template.find('#agent-name .aux').append(a.protocols.map(p => $(`<span>${p}</span>`)))
             template.show()
