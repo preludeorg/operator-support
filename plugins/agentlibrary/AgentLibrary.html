@@ -66,10 +66,10 @@
                     return 'C:\\Users\\Public'
             }
         }
-        fetchGatekeeper(constructEndpoint(`/agents/${agent}${platform === 'code' ? '/code' : ''}`, {
+        fetchGatekeeper(constructEndpoint(`/agents/${agent}`, {
                 email: SETTINGS.account.email,
                 token: SETTINGS.account.token,
-                platform: platform,
+                platform: platform
             })).then((res) => {
                     if (res.status === 200) {
                         return res.blob()
