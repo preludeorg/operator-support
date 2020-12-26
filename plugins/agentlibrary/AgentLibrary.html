@@ -47,7 +47,7 @@
                         template.find('#agent-description').text(describe)
                         template.find('#agent-platforms').append(a.platforms.map(p => a.package
                             ? $(`<a href="#" onClick="downloadAgent('${a.package}', '${p}', '${a.package}-${p == 'windows' ? `${p}.exe` : p}')">${p}</a>`)
-                            : $(`<span>${p}</span>`))).append($(`<a href="#" onClick="downloadAgent('${a.package}', 'code', '${a.package}.zip')">Code</a>`))
+                            : $(`<span>${p}</span>`))).append($(`<a href="#" onClick="downloadAgent('${a.package}', 'code', '${a.package}.zip')">Source Code</a>`))
                         template.find('#agent-name .aux').append(a.protocols.map(p => $(`<span>${p}</span>`)))
                         template.show()
                         agents.append(template)
