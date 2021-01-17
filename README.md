@@ -3,7 +3,9 @@
 [![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fdownload.prelude.org%2Fversion)](https://github.com/preludeorg/operator-support/releases)
 # Operator Support
 
-Operator is an autonomous red team C2 platform, built by [Prelude](https://prelude.org). You can download the latest copy of the platform [here](https://www.prelude.org/download/current).
+Operator is an autonomous red team C2 platform, built by [Prelude](https://prelude.org). You can download the latest copy of the desktop application [here](https://www.prelude.org/download/current), for either MacOS, Windows or Linux. 
+
+> Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Reach out to us at support@prelude.org for more details.
 
 This repository is a public spot to report issues and request features.
 
