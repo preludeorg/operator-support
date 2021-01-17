@@ -1,14 +1,14 @@
 [![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fdownload.prelude.org%2Fversion)](https://github.com/preludeorg/operator-support/releases)
 # Operator Support
 
-Operator is an autonomous adversary emulation platform, built by [Prelude](https://prelude.org). You can download the latest copy of the platform [here](https://www.prelude.org/download/current).
+Operator is an autonomous red team C2 platform, built by [Prelude](https://prelude.org). You can download the latest copy of the platform [here](https://www.prelude.org/download/current).
 
 This repository is a public spot to report issues and request features.
 
 Here are the open-source repositories the platform hooks into:
 
-- [Pneuma](https://github.com/preludeorg/pneuma): A cross-platform agent
-- [Community](https://github.com/preludeorg/community): A collection of attack procedures
+- [Pneuma](https://github.com/preludeorg/pneuma): A cross-platform GoLang agent that connects to Operator and executes attacks.
+- [Community](https://github.com/preludeorg/community): A collection of ATT&CK-classified procedures which Operator can send to agents, like Pneuma, to execute.
 
 ## Plugins
 
