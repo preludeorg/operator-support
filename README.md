@@ -5,6 +5,8 @@
 
 Operator is an autonomous red team C2 platform, built by [Prelude](https://prelude.org). It is designed for red, purple and blue teamers to conduct realistic threat assessments. Using the desktop application, you can deploy agents on remote computers and launch custom adversary profiles against them to identify the holes that antivirus programs & vulnerability scanners are not designed to locate. 
 
+> Watch our quick [introduction video](https://www.youtube.com/watch?v=Hz8K-jdqpBY)
+
 You can download the latest copy of the application [here](https://www.prelude.org/download/current), for either MacOS, Windows or Linux. 
 
 > Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Reach out to us at support@prelude.org for more details.
@@ -22,9 +24,9 @@ The Prelude development & security teams run several supporting resources for th
 
 ## Plugins
 
-Inside this space, you will find the open-source plugins that are supported within Operator. Plugins are extensions to the 
-Operator platform and allow you to add or overwrite behavior inside the application. Plugins here will automatically be available for installation
-via Operator's plugin section.
+Inside this repository, you will find all open-source plugins that are supported within Operator. 
+
+Plugins are extensions to the platform and allow you to add or overwrite behavior inside the application. Plugins here are automatically available inside Operator's plugin section. The code is published here for transparancy and review.
 
 ## Report a bug
 
