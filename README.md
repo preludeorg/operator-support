@@ -1,3 +1,5 @@
+![alt text](background.png)
+
 [![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fdownload.prelude.org%2Fversion)](https://github.com/preludeorg/operator-support/releases)
 # Operator Support
 
