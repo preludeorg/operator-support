@@ -11,7 +11,7 @@ You can download the latest copy of the application [here](https://www.prelude.o
 
 > Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Reach out to us at support@prelude.org for more details.
 
-This repository is a public spot to report issues and request features.
+This repository is the home to all Operator plugins (see below). It is also a public spot to report issues and request features for anything in the application.
 
 ## Resources
 
