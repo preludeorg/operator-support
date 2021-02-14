@@ -20,10 +20,14 @@ class Installer:
     
     @staticmethod
     def copy_configs():
-        if os.path.isfile('settings.yml'):
-            shutil.copyfile('settings.yml', '/home/vagrant/.config/Operator/settings.yml')
-        if os.path.isfile('schedules.yml'):
-            shutil.copyfile('schedules.yml', '/home/vagrant/.config/Operator/settings.yml')
+        os.makedirs('/home/vagrant/.config', 777)
+        os.makedirs('/home/vagrant/.config/Operator/', 777) 
+        os.makedirs('/home/vagrant/.config/Operator/workspace', 777)
+        os.makedirs('/home/vagrant/.config/Operator/workspace/adversary', 777)  
+        if os.path.isfile('/vagrant/configs/settings.yml'):
+            shutil.copyfile('/vagrant/configs/settings.yml', '/home/vagrant/.config/Operator/settings.yml')
+        if os.path.isfile('/vagrant/configs/schedules.yml'):
+            shutil.copyfile('/vagrant/configs/schedules.yml', '/home/vagrant/.config/Operator/schedules.yml')
         for src_file in Path('adversary').glob('*.*'):
             shutil.copyfile(src_file, '/home/vagrant/.config/Operator/workspace/%s' % src_file)
 
