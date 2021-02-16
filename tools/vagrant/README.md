@@ -26,6 +26,7 @@ And start Operator any time:
 ```
 ssh -XC -p 2222 vagrant@localhost operator
 ```
+> The default password is ```vagrant```
 
 ## Advanced usage
 
