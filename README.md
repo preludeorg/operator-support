@@ -14,14 +14,8 @@ You can download the latest copy of the application [here](https://www.prelude.o
 This repository contains the following:
 
 1. Known bugs & feature requests (check the issue tab)
-2. All Operator managed plugins
+2. All open-source plugins, which are separate components you can install inside Operator
 3. A collection of tools which work with the Operator ecosystem
-
-## Plugins
-
-Inside this repository, you will find all open-source plugins that are supported within Operator.
-
-Plugins are extensions to the platform and allow you to add or overwrite behavior inside the application. Plugins here are automatically available inside Operator's plugin section. The code is published here for transparancy and review.
 
 ## Resources
 
