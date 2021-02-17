@@ -18,11 +18,15 @@ To do this, ensure you have Vagrant and VirtualBox installed.
 
 ## Installation 
 
+Ensure you have a default Vagrant SSH config. This is a 1-time set up command if you haven't run it before:
+```
+vagrant ssh-config
+```
 Now you can start Vagrant normally:
 ```
 vagrant up
 ```
-And start Operator any time:
+Finally, start Operator any time:
 ```
 ssh -XC -p 2222 vagrant@localhost operator
 ```
