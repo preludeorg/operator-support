@@ -39,6 +39,30 @@
             </div>
         </div>
         <div class="label-text">
+            <p>Region</p>
+            <select id="region">
+                <option value="us-east-1">us-east-1</option>
+                <!-- <option value="us-east-2">us-east-2</option> -->
+                <!-- <option value="us-west-1">us-west-1</option> -->
+                <!-- <option value="us-west-2">us-west-2</option> -->
+                <!-- <option value="ap-northeast-1">ap-northeast-1</option> -->
+                <!-- <option value="ap-northeast-2">ap-northeast-2</option> -->
+                <!-- <option value="ap-northeast-3">ap-northeast-3</option> -->
+                <!-- <option value="ap-south-1">ap-south-1</option> -->
+                <!-- <option value="ap-southeast-1">ap-southeast-1</option> -->
+                <!-- <option value="ap-southeast-2">ap-southeast-2</option> -->
+                <!-- <option value="ca-central-1">ca-central-1</option> -->
+                <!-- <option value="cn-north-1">cn-north-1</option> -->
+                <!-- <option value="cn-northwest-1">cn-northwest-1</option> -->
+                <!-- <option value="eu-central-1">eu-central-1</option> -->
+                <!-- <option value="eu-west-1">eu-west-1</option> -->
+                <!-- <option value="eu-west-2">eu-west-2</option> -->
+                <!-- <option value="eu-west-3">eu-west-3</option> -->
+                <!-- <option value="sa-east-1">sa-east-1</option> -->
+                <!-- <option value="us-gov-west-1">us-gov-west-1</option> -->
+            </select>
+        </div>
+        <div class="label-text">
             <p>AWS access key</p>
             <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
         </div>
@@ -57,6 +81,12 @@
             <p>Purpose</p>
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
+            </select>
+        </div>
+        <div class="label-text">
+            <p>Region</p>
+            <select id="region">
+                <option value="us-east-1">us-east-1</option>
             </select>
         </div>
         <div class="label-text">
@@ -86,10 +116,50 @@
 
 <div id="init-plugin">
     <script>
+        function destructor(config, host, redirector) {
+            if (redirector.region) {
+                return (() => new Promise((resolve, reject) => {
+                    if (/.*amazonaws\.com$/gi.exec(host)) {
+                        let request = {
+                            token: SETTINGS.account.token,
+                            email: SETTINGS.account.email,
+                            host: host,
+                            config: {
+                                region: redirector.region,
+                                key_name: config.aws.key_name.split('/').slice(-1)[0],
+                                access_key_id: config.aws.access_key_id,
+                                secret_access_key: config.aws.secret_access_key
+                            }
+                        }
+                        restRequest('DELETE', request, resolve, reject, '/range/aws/gateway')
+                    } else {
+                        let request = {
+                            token: SETTINGS.account.token,
+                            email: SETTINGS.account.email,
+                            host: host,
+                            config: {
+                                region: redirector.region,
+                                user_id: config.gcp.user_id,
+                                project: config.gcp.project,
+                                key_name: config.gcp.ssh_key,
+                                rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
+                            }
+                        }
+                        restRequest('DELETE', request, resolve, reject, '/range/gcp/gateway')
+                    }
+                }));
+            } else {
+                return null;
+            }
+        }
+
         $(document).ready(function () {
             let config = getPluginConfig('Cloud')
             Object.keys(config.redirectors ? config.redirectors : {}).forEach(host => {
-                REDIRECTORS[host] = config.redirectors[host]
+                REDIRECTORS[host] = {
+                    ...config.redirectors[host],
+                    destroy: destructor(config, host, config.redirectors[host])
+                }
             })
         })
     </script>
@@ -144,9 +214,13 @@
             $("#cloud-div .loader").removeClass("loading")
             const redirector = {
                 user: 'ec2-user',
-                key: config.aws.key_name
+                key: config.aws.key_name,
+                region: $('#aws #region').val()
             }
-            REDIRECTORS[d.instance] = redirector
+            REDIRECTORS[d.instance] = {
+                ...redirector,
+                destroy: destructor(config, d.instance, redirector)
+            };
             if(!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
@@ -172,7 +246,8 @@
             platform: $('#aws-platform').val(),
             callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
             config: {
-                key_name: path.basename(config.aws.key_name),
+                region: $('#aws #region').val(),
+                key_name: config.aws.key_name.split('/').slice(-1)[0],
                 access_key_id: config.aws.access_key_id,
                 secret_access_key: config.aws.secret_access_key
             }
@@ -190,9 +265,13 @@
             $("#cloud-div .loader").removeClass("loading")
             const redirector = {
                 user: config.gcp.ssh_user,
-                key: config.gcp.ssh_key
+                key: config.gcp.ssh_key,
+                region: $('#aws #region').val()
             }
-            REDIRECTORS[d.instance] = redirector
+            REDIRECTORS[d.instance] = {
+                ...redirector,
+                destroy: destructor(config, d.instance, redirector)
+            };
             if(!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
@@ -220,6 +299,7 @@
             token: SETTINGS.account.token,
             email: SETTINGS.account.email,
             config: {
+                region: gcp.find('#region').val(),
                 user_id: config.gcp.user_id,
                 project: config.gcp.project,
                 key_name: config.gcp.ssh_key,
