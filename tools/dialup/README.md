@@ -1,4 +1,4 @@
-# Headless
+# DialUP
 
 You can run Prelude Operator in headless mode, which installs and runs the desktop application on a remote Vagrant image and forwards the GUI to the host. 
 
