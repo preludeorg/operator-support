@@ -18,13 +18,10 @@ To do this, ensure you have Vagrant and VirtualBox installed.
 
 ## Installation 
 
-Ensure you have a default Vagrant SSH config. This is a 1-time set up command if you haven't run it before:
-```
-vagrant ssh-config
-```
 Now you can start Vagrant normally:
 ```
 vagrant up
+vagrant ssh-config
 ```
 Finally, start Operator any time:
 ```
