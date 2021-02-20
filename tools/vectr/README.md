@@ -19,4 +19,4 @@ Then head to https://localhost:8081 and log in with username=```admin``` and pas
 ## Operator integration
 
 If you have a Professional license, you will see VECTR in the Publisher plugin. Enter the absolute path to a new CSV
-file on your computer to "publish" all attack results to a file you can later import into VECTR.
+file on your computer to "publish" all attack results to a file you can later import as a log into VECTR.
