@@ -1,0 +1,27 @@
+Vagrant.configure("2") do |config|
+  config.ssh.forward_x11 = true
+  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.network "forwarded_port", guest: 8081, host: 8081
+  config.vm.provider :virtualbox do |v|
+    v.customize ["modifyvm", :id, "--memory", 4096]
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+     sudo apt-get update
+     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+     sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+     sudo apt update -y
+     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose unzip -y
+     sudo apt upgrade -y
+     sudo systemctl enable docker
+     mkdir -p /opt/vectr
+     cd /opt/vectr
+     sudo wget https://github.com/SecurityRiskAdvisors/VECTR/releases/download/ce-6.1.7/sra-vectr-runtime-6.1.7-ce.zip -O /opt/vectr/vectr.zip
+     sudo unzip vectr.zip
+     sudo docker-compose up -d
+     sudo echo "VECTR_FEATURES_SCYTHELOG=true" >> .env
+     echo "[+] Done! Head to https://localhost:8081. Your credentials are: admin:11_ThisIsTheFirstPassword_11"
+   SHELL
+end
