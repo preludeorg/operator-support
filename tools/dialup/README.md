@@ -14,7 +14,7 @@ You may want this if you:
 
 To do this, ensure you have Vagrant and VirtualBox installed. 
 
-> If on a MacOS, you will also need xquartz installed, which can be done via ```brew install xquartz```
+> If on a MacOS, you will also need [xquartz](https://www.xquartz.org/) installed.
 
 ## Installation 
 
