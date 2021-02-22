@@ -86,10 +86,44 @@
 
 <div id="init-plugin">
     <script>
+        function destructor(config, host, redirector) {
+            return (() => new Promise((resolve, reject) => {
+                if (/.*amazonaws\.com$/gi.exec(host)) {
+                    let request = {
+                        token: SETTINGS.account.token,
+                        email: SETTINGS.account.email,
+                        host: host,
+                        config: {
+                            key_name: path.basename(config.aws.key_name),
+                            access_key_id: config.aws.access_key_id,
+                            secret_access_key: config.aws.secret_access_key
+                        }
+                    }
+                    restRequest('DELETE', request, resolve, reject, '/range/aws/gateway')
+                } else {
+                    let request = {
+                        token: SETTINGS.account.token,
+                        email: SETTINGS.account.email,
+                        host: host,
+                        config: {
+                            user_id: config.gcp.user_id,
+                            project: config.gcp.project,
+                            key_name: config.gcp.ssh_key,
+                            rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
+                        }
+                    }
+                    restRequest('DELETE', request, resolve, reject, '/range/gcp/gateway')
+                }
+            }));
+        }
+
         $(document).ready(function () {
             let config = getPluginConfig('Cloud')
             Object.keys(config.redirectors ? config.redirectors : {}).forEach(host => {
-                REDIRECTORS[host] = config.redirectors[host]
+                REDIRECTORS[host] = {
+                    ...config.redirectors[host],
+                    destroy: destructor(config, host, config.redirectors[host])
+                }
             })
         })
     </script>
@@ -146,7 +180,10 @@
                 user: 'ec2-user',
                 key: config.aws.key_name
             }
-            REDIRECTORS[d.instance] = redirector
+            REDIRECTORS[d.instance] = {
+                ...redirector,
+                destroy: destructor(config, d.instance, redirector)
+            };
             if(!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
@@ -192,7 +229,10 @@
                 user: config.gcp.ssh_user,
                 key: config.gcp.ssh_key
             }
-            REDIRECTORS[d.instance] = redirector
+            REDIRECTORS[d.instance] = {
+                ...redirector,
+                destroy: destructor(config, d.instance, redirector)
+            };
             if(!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
