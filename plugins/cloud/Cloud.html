@@ -39,12 +39,6 @@
             </div>
         </div>
         <div class="label-text">
-            <p>Region</p>
-            <select id="region">
-                <option value="us-east-1">us-east-1</option>
-            </select>
-        </div>
-        <div class="label-text">
             <p>AWS access key</p>
             <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
         </div>
@@ -63,12 +57,6 @@
             <p>Purpose</p>
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
-            </select>
-        </div>
-        <div class="label-text">
-            <p>Region</p>
-            <select id="region">
-                <option value="us-central1">us-central1</option>
             </select>
         </div>
         <div class="label-text">
@@ -99,40 +87,34 @@
 <div id="init-plugin">
     <script>
         function destructor(config, host, redirector) {
-            if (redirector.region) {
-                return (() => new Promise((resolve, reject) => {
-                    if (/.*amazonaws\.com$/gi.exec(host)) {
-                        let request = {
-                            token: SETTINGS.account.token,
-                            email: SETTINGS.account.email,
-                            host: host,
-                            config: {
-                                region: redirector.region,
-                                key_name: config.aws.key_name.split('/').slice(-1)[0],
-                                access_key_id: config.aws.access_key_id,
-                                secret_access_key: config.aws.secret_access_key
-                            }
+            return (() => new Promise((resolve, reject) => {
+                if (/.*amazonaws\.com$/gi.exec(host)) {
+                    let request = {
+                        token: SETTINGS.account.token,
+                        email: SETTINGS.account.email,
+                        host: host,
+                        config: {
+                            key_name: config.aws.key_name.split('/').slice(-1)[0],
+                            access_key_id: config.aws.access_key_id,
+                            secret_access_key: config.aws.secret_access_key
                         }
-                        restRequest('DELETE', request, resolve, reject, '/range/aws/gateway')
-                    } else {
-                        let request = {
-                            token: SETTINGS.account.token,
-                            email: SETTINGS.account.email,
-                            host: host,
-                            config: {
-                                region: redirector.region,
-                                user_id: config.gcp.user_id,
-                                project: config.gcp.project,
-                                key_name: config.gcp.ssh_key,
-                                rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
-                            }
-                        }
-                        restRequest('DELETE', request, resolve, reject, '/range/gcp/gateway')
                     }
-                }));
-            } else {
-                return null;
-            }
+                    restRequest('DELETE', request, resolve, reject, '/range/aws/gateway')
+                } else {
+                    let request = {
+                        token: SETTINGS.account.token,
+                        email: SETTINGS.account.email,
+                        host: host,
+                        config: {
+                            user_id: config.gcp.user_id,
+                            project: config.gcp.project,
+                            key_name: config.gcp.ssh_key,
+                            rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
+                        }
+                    }
+                    restRequest('DELETE', request, resolve, reject, '/range/gcp/gateway')
+                }
+            }));
         }
 
         $(document).ready(function () {
@@ -196,8 +178,7 @@
             $("#cloud-div .loader").removeClass("loading")
             const redirector = {
                 user: 'ec2-user',
-                key: config.aws.key_name,
-                region: $('#aws #region').val()
+                key: config.aws.key_name
             }
             REDIRECTORS[d.instance] = {
                 ...redirector,
@@ -228,7 +209,6 @@
             platform: $('#aws-platform').val(),
             callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
             config: {
-                region: $('#aws #region').val(),
                 key_name: config.aws.key_name.split('/').slice(-1)[0],
                 access_key_id: config.aws.access_key_id,
                 secret_access_key: config.aws.secret_access_key
@@ -247,8 +227,7 @@
             $("#cloud-div .loader").removeClass("loading")
             const redirector = {
                 user: config.gcp.ssh_user,
-                key: config.gcp.ssh_key,
-                region: $('#gcp #region').val()
+                key: config.gcp.ssh_key
             }
             REDIRECTORS[d.instance] = {
                 ...redirector,
@@ -281,7 +260,6 @@
             token: SETTINGS.account.token,
             email: SETTINGS.account.email,
             config: {
-                region: gcp.find('#region').val(),
                 user_id: config.gcp.user_id,
                 project: config.gcp.project,
                 key_name: config.gcp.ssh_key,
