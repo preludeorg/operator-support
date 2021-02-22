@@ -15,16 +15,15 @@
                     style="" onclick="generateLayer()">Generate Layer</button>
 <script>
 var fileString = "";
-var loadDir = `${SETTINGS.local.workspace}/plugins/Navigator/`;
+var loadUrl = `https://raw.githubusercontent.com/bfuzzy1/operator-support/master/plugins/navigator/template.json`;
 var loadDoc = function () {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       fileString = this.responseText;
-      //console.log(outputFile);
     }
   };
-  xhttp.open("GET", loadDir + "template.json", true);
+  xhttp.open("GET", loadUrl, true);
   xhttp.send();
 }
 var advDropdown_Populate = function () { 
@@ -49,8 +48,6 @@ var generateLayer = function () {
   let selectedText = dropList.options[dropList.selectedIndex].innerHTML;
   let selectedValue = dropList.value;
   let objKeys2 = Object.keys(ADVERSARIES);
-  let atkId = "";
-  let atkTactic = "";
   let data = [];
   objKeys2.forEach(key => {
     let attackVar = ADVERSARIES[key];
@@ -72,8 +69,6 @@ var generateLayer = function () {
       }
     }
   });
-  //console.log("fileString: " + fileString);
-  //getDownloadDir() function from AgentLibray ala privateducky
   function getDownloadDir() {
   switch (os.platform()) {
     case 'darwin':
