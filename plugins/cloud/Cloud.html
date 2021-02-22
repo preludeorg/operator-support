@@ -94,7 +94,7 @@
                         email: SETTINGS.account.email,
                         host: host,
                         config: {
-                            key_name: config.aws.key_name.split('/').slice(-1)[0],
+                            key_name: path.basename(config.aws.key_name),
                             access_key_id: config.aws.access_key_id,
                             secret_access_key: config.aws.secret_access_key
                         }
@@ -209,7 +209,7 @@
             platform: $('#aws-platform').val(),
             callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
             config: {
-                key_name: config.aws.key_name.split('/').slice(-1)[0],
+                key_name: path.basename(config.aws.key_name),
                 access_key_id: config.aws.access_key_id,
                 secret_access_key: config.aws.secret_access_key
             }
