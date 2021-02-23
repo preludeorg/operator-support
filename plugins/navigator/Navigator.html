@@ -1,93 +1,42 @@
 <div class="profile-heading-container">
     <div class="body">
         <strong class="profile-heading">Navigator</strong>
-        <p>This plugin acts as a connector to <a href="https://github.com/mitre-attack/attack-navigator">MITRE's ATT&CK Navigator</a>. 
-
-        The principal feature of the Navigator is the ability for users to define layers - custom views of the ATT&CK knowledge base - e.g. showing just those techniques for a particular platform or highlighting techniques a specific adversary has been known to use. Layers can be created interactively within the Navigator or generated programmatically and then visualized via the Navigator. </p>
+        <p>This plugin acts as a connector to <a href="https://github.com/mitre-attack/attack-navigator">MITRE's ATT&CK Navigator</a>.The principal feature of the Navigator is the ability for users to define layers - custom views of the ATT&CK knowledge base - e.g. showing just those techniques for a particular platform or highlighting techniques a specific adversary has been known to use. Layers can be created interactively within the Navigator or generated programmatically and then visualized via the Navigator. </p>
     </div>
 </div>
-<p> Export to Attack Navigator layer </p>
-<select id="adversary">
-    <option>Choose an Adversary to export</option>
+<select id="navigation-adversary" onchange="generateNavigatorLayer()">
+    <option>Choose an adversary</option>
 </select>
-<br>
-<button id="generateLayer" type="button" class="button-success"
-                    style="" onclick="generateLayer()">Generate Layer</button>
+<object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" width="100%" height="100%" background="#fff;" style="filter: invert(100%) grayscale(100%);"></object>
 <script>
-var fileString = "";
-var loadUrl = `https://raw.githubusercontent.com/bfuzzy1/operator-support/master/plugins/navigator/template.json`;
-var loadDoc = function () {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      fileString = this.responseText;
+    $(document).ready(function () {
+        loadAdversaries();
+    })
+
+    function loadAdversaries() {
+        Object.values(ADVERSARIES).forEach(adv => {
+            $('#navigation-adversary').append(new Option(adv.name, adv.id))
+        })
     }
-  };
-  xhttp.open("GET", loadUrl, true);
-  xhttp.send();
-}
-var advDropdown_Populate = function () { 
-    let objKeys = Object.keys(ADVERSARIES); 
-    objKeys.forEach(key => { 
-        let value = ADVERSARIES[key]; 
-        advName = value.name;
-        advId = value.id;
-        if (advName) {
-            var select = document.getElementById("adversary");
-            var el = document.createElement("option");
-            el.textContent = advName;
-            el.value = advId;
-            select.appendChild(el);
-        }
-    });
-}
-loadDoc();
-advDropdown_Populate();
-var generateLayer = function () {
-  let dropList = document.getElementById("adversary");
-  let selectedText = dropList.options[dropList.selectedIndex].innerHTML;
-  let selectedValue = dropList.value;
-  let objKeys2 = Object.keys(ADVERSARIES);
-  let data = [];
-  objKeys2.forEach(key => {
-    let attackVar = ADVERSARIES[key];
-    if (selectedValue == attackVar.id){
-      advTtps = attackVar.ttps;
-      if (advTtps) {
-        for (let i = 0; i < advTtps.length; i++) {
-            let incomingId = advTtps[i];
-            let objKeys3 = Object.keys(ATTACK);
-            objKeys3.forEach(key => { 
-                let attackAr = ATTACK[key];
-                let attackArID = attackAr.id;
-                let attackArTactic = attackAr.tactic;
-                let attackArTechId = attackAr.technique.id;
-                if (incomingId == attackArID)
-                  data.push('{"tactic":"' + attackArTactic + '","techniqueID":"' + attackArTechId.split('.', 1) + '","score":100,"color":"","comment":"","enabled":true,"metadata": [],"showSubtechniques":false}');
-            });
-        }
-      }
+
+    function generateNavigatorLayer(){
+        fetch('https://raw.githubusercontent.com/bfuzzy1/operator-support/master/plugins/navigator/template.json')
+            .then(response => response.text())
+            .then((response) => {
+                constructLayerFile(response)
+            }).catch(err => console.log(err))
     }
-  });
-  function getDownloadDir() {
-  switch (os.platform()) {
-    case 'darwin':
-      return `${process.env.HOME}/Downloads/`
-    case 'linux':
-      return '/tmp/'
-    case 'win32':
-      return 'C:\\Users\\Public\\'
-  }
-};
-  let dir = getDownloadDir()
-  let fileOutput = fileString.replace('"techniques": [],',('"techniques" : [' + data.join(",\r\n") + '],'));
-  let filename = "attack_navigator_output.json";
-  let path = dir + filename;
-  storeData(fileOutput, path, false);
-  showNotification('Downloaded File', `Downloaded ${filename} to ${dir}`)
-}
+
+    function constructLayerFile(template) {
+        let data = []
+        const adversary = ADVERSARIES[$("#navigation-adversary option:selected").val()];
+        adversary.ttps.forEach(ttp => {
+            const procedure = ATTACK[ttp];
+            data.push('{"tactic":"' + procedure.tactic + '","techniqueID":"' + procedure.technique.id.split('.', 1) + '","score":100,"color":"","comment":"","enabled":true,"metadata": [],"showSubtechniques":false}');
+        });
+        let layer = template.replace('"techniques": [],', ('"techniques" : [' + data.join(",\r\n") + '],'));
+        let storedFile = SETTINGS.local.workspace+'/plugins/Navigator/'+adversary.name+'.json'
+        storeData(layer, storedFile);
+        showNotification('Generated layer', storedFile)
+    }
 </script>
-<br>
-<hr>
-    <object type="text/html" data="https://mitre-attack.github.io/attack-navigator/"  width="100%" height="100%"style="overflow:auto;background:white">
-    </object>
