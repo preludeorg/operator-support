@@ -63,7 +63,7 @@ var generateLayer = function () {
                 let attackArTactic = attackAr.tactic;
                 let attackArTechId = attackAr.technique.id;
                 if (incomingId == attackArID)
-                  data.push('{"tactic":"' + attackArTactic + '","techniqueID":"' + attackArTechId + '","score":100,"color":"","comment":"","enabled":true,"metadata": [],"showSubtechniques":false}');
+                  data.push('{"tactic":"' + attackArTactic + '","techniqueID":"' + attackArTechId.split('.', 1) + '","score":100,"color":"","comment":"","enabled":true,"metadata": [],"showSubtechniques":false}');
             });
         }
       }
