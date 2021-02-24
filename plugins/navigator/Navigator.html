@@ -20,7 +20,7 @@
     }
 
     function generateNavigatorLayer(){
-        fetch('https://raw.githubusercontent.com/bfuzzy1/operator-support/master/plugins/navigator/template.json')
+        fetch('https://raw.githubusercontent.com/preludeorg/operator-support/master/plugins/navigator/template.json')
             .then(response => response.text())
             .then((response) => {
                 constructLayerFile(response)
