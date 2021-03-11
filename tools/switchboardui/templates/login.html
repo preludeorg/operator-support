@@ -1,0 +1,20 @@
+<html>
+<head>
+    <title>Login</title>
+    <link rel="shortcut icon" type="image/png" href="/gui/img/favicon.png"/>
+    <link rel="stylesheet" href="/gui/css/basic.css">
+    <script src="/gui/jquery/jquery.js"></script>
+</head>
+</html>
+<body>
+<div class="container">
+    <div class="main center">
+        <form id="loginForm" class="form" method="post" action="/manage">
+            <h2>Switchboard</h2>
+            <label>Account tag:</label>
+            <input type="password" name="password" id="password">
+            <input type="button" name="login" id="login" value="Login" onclick="$('form#loginForm').submit()">
+        </form>
+    </div>
+</div>
+</body>

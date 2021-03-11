@@ -1,0 +1,55 @@
+.component {
+    width: 80%;
+    padding: 10px;
+}
+.component-header {
+    width: 33%;
+    padding: 10px;
+    background-color: darkred;
+    border-radius: 15px;
+}
+.horizontal-list {
+    float: left;
+    width: 100%;
+}
+.horizontal-list li {
+    font-size: 16px;
+    color: white;
+    display: block;
+    float: left;
+    margin: 10px;
+}
+.trigger-card {
+    background-color: #1e1e1e;
+    width: 20%;
+    color: white;
+    padding: 10px 20px 5px;
+    margin: 5px;
+    position: relative;
+    border-radius: 25px;
+    border: 2px solid black;
+}
+.trigger-card h3 {
+    font-size: 18px;
+}
+.trigger-card p {
+    font-size: 11px;
+}
+.trigger-card-bottom {
+    bottom: 0;
+    position: absolute;
+}
+.trigger-ticker {
+    padding: 10px;
+    background-color: black;
+    opacity: 1.0;
+    border-radius: 25px;
+    text-align: center;
+}
+.ticker-info {
+    width: 100%;
+    text-align: center;
+}
+.ticker-info td {
+    font-size:11px;
+}

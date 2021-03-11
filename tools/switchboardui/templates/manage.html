@@ -1,0 +1,71 @@
+<html>
+<head>
+    <title>Switchboard</title>
+    <link rel="shortcut icon" type="image/png" href="/gui/img/favicon.png"/>
+    <link rel="stylesheet" href="/gui/css/basic.css">
+    <link rel="stylesheet" href="/gui/css/manage.css">
+    <script src="/gui/jquery/jquery.js"></script>
+</head>
+<body>
+<center>
+    <h1>Welcome to Switchboard</h1>
+    <div class="component">
+        <div class="component-header">
+            Here you can manage each Operator instance that has opened a redirector to this
+            server. You can see the listening port of the redirector along with the attached relay port. Change the
+            relay port to accept beacons on it and relay the traffic to a particular redirector.
+        </div>
+        <ul class="horizontal-list">
+            {{range .Operators}}
+            <li class="trigger-card">
+                <div class="trigger-ticker">
+                    <table class="ticker-info" border=1 frame=void rules=rows>
+                        <tr>
+                            <td><h3>{{.Email}}</h3></td>
+                        </tr>
+                        <tr>
+                            <td><p style="font-size:24px">{{.Port}}</p></td>
+                            <td><p id="{{.Instance}}" style="font-size:24px;" contenteditable="true" onfocusout="updateRelay('{{.Instance}}')">{{.Relay.Port}}</p></td>
+                        </tr>
+                        <tr>
+                            <td><i>LISTENING</i></td>
+                            <td><i>RELAY</i></td>
+                        </tr>
+                    </table>
+                </div>
+                <br>
+                <p class="trigger-card-bottom">{{.Created}}</p>
+                <br>
+            </li>
+            {{end}}
+        </ul>
+    </div>
+</center>
+</body>
+</html>
+<script>
+    function updateRelay(instance){
+        const relay = parseInt($(`#${instance}`).text())
+        if(relay > 0){
+            $.ajax({
+                url: '/relay',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {tag: '5577006791947779410'},
+                data: JSON.stringify({instance: instance, port: relay}),
+                success: function (data, status, options) {
+                    alert('Updated!')
+                    document.open();
+                    document.write(data);
+                    document.close();
+                },
+                error: function (response, ajaxOptions, thrownError) {
+                    if(response.status === 401){
+                        console.log('Authentication failed')
+                    }
+                    console.log(thrownError)
+                }
+            });
+        }
+    }
+</script>
