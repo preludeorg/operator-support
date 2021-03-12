@@ -12,12 +12,12 @@
 <script>
 function toggle_mode() {
     var app = document.querySelector('body')
-    if (app.classList != 'inverted') {
-    	document.querySelector('body').classList.add('inverted')
+    if (!app.classList.contains("inverted")) {
+        document.querySelector('body').classList.add('inverted')
     }
     else {
-    	document.querySelector('body').classList.remove('inverted')
-    }		
+        document.querySelector('body').classList.remove('inverted')
+    }       
 }
 </script>
 </div>
