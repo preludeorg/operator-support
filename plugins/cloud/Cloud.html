@@ -86,44 +86,10 @@
 
 <div id="init-plugin">
     <script>
-        function destructor(config, host, redirector) {
-            return (() => new Promise((resolve, reject) => {
-                if (/.*amazonaws\.com$/gi.exec(host)) {
-                    let request = {
-                        token: SETTINGS.account.token,
-                        email: SETTINGS.account.email,
-                        host: host,
-                        config: {
-                            key_name: path.basename(config.aws.key_name),
-                            access_key_id: config.aws.access_key_id,
-                            secret_access_key: config.aws.secret_access_key
-                        }
-                    }
-                    restRequest('DELETE', request, resolve, reject, '/range/aws/gateway')
-                } else {
-                    let request = {
-                        token: SETTINGS.account.token,
-                        email: SETTINGS.account.email,
-                        host: host,
-                        config: {
-                            user_id: config.gcp.user_id,
-                            project: config.gcp.project,
-                            key_name: config.gcp.ssh_key,
-                            rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
-                        }
-                    }
-                    restRequest('DELETE', request, resolve, reject, '/range/gcp/gateway')
-                }
-            }));
-        }
-
         $(document).ready(function () {
             let config = getPluginConfig('Cloud')
             Object.keys(config.redirectors ? config.redirectors : {}).forEach(host => {
-                REDIRECTORS[host] = {
-                    ...config.redirectors[host],
-                    destroy: destructor(config, host, config.redirectors[host])
-                }
+                REDIRECTORS[host] = config.redirectors[host]
             })
         })
     </script>
@@ -176,21 +142,20 @@
         }
         function tunnelSuccess(d){
             $("#cloud-div .loader").removeClass("loading")
+            const seconds = 30;
             const redirector = {
-                user: 'ec2-user',
-                key: config.aws.key_name
+                user: 'ubuntu',
+                key: config.aws.key_name,
+                availableAt: new Date(Date.now() + (1000 * seconds))
             }
-            REDIRECTORS[d.instance] = {
-                ...redirector,
-                destroy: destructor(config, d.instance, redirector)
-            };
+            REDIRECTORS[d.instance] = redirector
             if(!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
-            config.redirectors[d.instance] = redirector
-            flushPluginConfig('Cloud', config)
-            showNotification('Success!', 'Your redirector is now available')
-            refreshPage()
+            config.redirectors[d.instance] = redirector;
+            flushPluginConfig('Cloud', config);
+            showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
+            refreshPage();
         }
         function failure(d){
             $("#cloud-div .loader").removeClass("loading")
@@ -209,7 +174,7 @@
             platform: $('#aws-platform').val(),
             callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
             config: {
-                key_name: path.basename(config.aws.key_name),
+                key_name: config.aws.key_name.split('/').slice(-1)[0],
                 access_key_id: config.aws.access_key_id,
                 secret_access_key: config.aws.secret_access_key
             }
@@ -229,10 +194,7 @@
                 user: config.gcp.ssh_user,
                 key: config.gcp.ssh_key
             }
-            REDIRECTORS[d.instance] = {
-                ...redirector,
-                destroy: destructor(config, d.instance, redirector)
-            };
+            REDIRECTORS[d.instance] = redirector
             if(!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
