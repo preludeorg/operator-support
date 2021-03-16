@@ -185,6 +185,18 @@
             $("#cloud-div .loader").removeClass("loading")
             showNotification('Deployed!', d.instance + ' may take several minutes to show up')
         }
+        function splunkSuccess(d){
+            $("#cloud-div .loader").removeClass("loading");
+            showNotification('Deployed!', d.instance_dns + ' may take several minutes to show up');
+            electron.ipcRenderer.invoke('show-message-box', {
+                type: 'info',
+                buttons: ['OK'],
+                defaultId: 0,
+                title: 'Splunk Instance Credentials',
+                message: `Access splunk at:\nhttp://${d.instance_dns}:8000`,
+                detail: `Username: admin\nPassword: SPLUNK-${d.instance_id}`
+            })
+        }
         function tunnelSuccess(d){
             $("#cloud-div .loader").removeClass("loading")
             const seconds = 30;
@@ -235,7 +247,7 @@
             success = tunnelSuccess;
         } else if (platformTarget === 'splunk') {
             uri = '/range/aws/splunk';
-            success = rangeSuccess;
+            success = splunkSuccess;
         } else {
             uri = '/range/aws';
             success = rangeSuccess;
