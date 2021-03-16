@@ -1,6 +1,6 @@
-<div class="profile-heading-container">
-    <div class="body">
-        <strong class="profile-heading">Cloud resources</strong>
+<div className="profile-heading-container">
+    <div className="body">
+        <strong className="profile-heading">Cloud resources</strong>
         <p>
             Deploy either new redirectors, to accept beacons over the internet, or new compromised servers, to build
             a custom test range and execute attacks on various operating systems.
@@ -8,8 +8,8 @@
     </div>
 </div>
 
-<div id="cloud-div" class="loader-container">
-    <div class="label-text">
+<div id="cloud-div" className="loader-container">
+    <div className="label-text">
         <p>Purpose</p>
         <select id="cloud-provider">
             <option value="aws">Amazon Web Services (AWS)</option>
@@ -17,71 +17,79 @@
         </select>
     </div>
     <div id="aws">
-        <div class="label-text">
+        <div className="label-text">
             <p>Purpose</p>
             <select id="aws-platform">
                 <option value="gateway">Linux redirector</option>
+                <option value="splunk">Splunk Range</option>
                 <option value="windows">Compromised Windows server</option>
                 <option value="linux">Compromised Linux server</option>
                 <option value="darwin">Compromised Mac OS server</option>
             </select>
         </div>
         <div id="range-configs" style="display: none">
-            <div id="agents" class="label-text">
+            <div id="agents" className="label-text">
                 <p>Drop agent</p>
                 <select id="select-agent">
                     <option id="pneuma" value="pneuma">Drop a Pneuma agent</option>
                 </select>
             </div>
-            <div id="redirectors" class="label-text">
+            <div id="redirectors" className="label-text">
                 <p>Redirector</p>
                 <select id="select-redirector"></select>
             </div>
         </div>
-        <div class="label-text">
+        <div id="splunk-configs" style="display: none">
+            <div id="quantity" className="label-text">
+                <p>Windows Instance Quantity</p>
+                <div className="input-wrapper"><input id="instance-count" type="number" spellCheck="false" value="1"/>
+                </div>
+            </div>
+        </div>
+        <div className="label-text">
             <p>AWS access key</p>
-            <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="aws-access-key" type="password" spellCheck="false"/></div>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>AWS secret key</p>
-            <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="aws-secret-key" type="password" spellCheck="false"/></div>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>Private key path</p>
-            <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
+            <div className="input-wrapper"><input id="aws-key" type="text" spellCheck="false" placeholder=""/></div>
         </div>
-        <button id="aws-deploy" onclick="deployAWS()">Deploy</button>
+        <button id="aws-deploy" onClick="deployAWS()">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
-        <div class="label-text">
+        <div className="label-text">
             <p>Purpose</p>
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
             </select>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>Project ID</p>
-            <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="project" type="text" spellCheck="false"/></div>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>Service account</p>
-            <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="user_id" type="text" spellCheck="false"/></div>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>Service account key file path</p>
-            <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="rsa_key" type="text" spellCheck="false"/></div>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>Project-wide SSH user</p>
-            <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="ssh_user" type="text" spellCheck="false"/></div>
         </div>
-        <div class="label-text">
+        <div className="label-text">
             <p>Project-wide SSH key file path</p>
-            <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
+            <div className="input-wrapper"><input id="ssh_key" type="text" spellCheck="false"/></div>
         </div>
-        <button id="gcp-deploy" onclick="deployGCP()">Deploy</button>
+        <button id="gcp-deploy" onClick="deployGCP()">Deploy</button>
     </div>
-    <div class="loader"></div>
+    <div className="loader"></div>
 </div>
 
 <div id="init-plugin">
@@ -137,16 +145,20 @@
             $('#' + ev.target.value).show()
         })
 
-        $('#aws-platform').on('change', function(ev) {
-            if(ev.target.value==='gateway'){
-                $('#range-configs').hide()
+        $('#aws-platform').on('change', function (ev) {
+            if (ev.target.value === 'gateway') {
+                $('#range-configs').hide();
+                $('#splunk-configs').hide();
+            } else if (ev.target.value === 'splunk') {
+                $('#range-configs').show();
+                $('#splunk-configs').show();
             } else {
-                $('#range-configs').show()
+                $('#range-configs').show();
             }
         })
     })
 
-    function refreshPage(){
+    function refreshPage() {
         const config = getPluginConfig('Cloud')
         $('#aws-key').val(config.aws?.key_name || '')
         $('#aws-access-key').val(config.aws?.access_key_id || '')
@@ -166,15 +178,16 @@
         gcp.find('#ssh_key').val(config.gcp?.ssh_key || '')
     }
 
-    function deployAWS(){
+    function deployAWS() {
         $("#cloud-div .loader").addClass("loading")
         let config = getPluginConfig('Cloud')
 
-        function rangeSuccess(d){
+        function rangeSuccess(d) {
             $("#cloud-div .loader").removeClass("loading")
             showNotification('Deployed!', d.instance + ' may take several minutes to show up')
         }
-        function tunnelSuccess(d){
+
+        function tunnelSuccess(d) {
             $("#cloud-div .loader").removeClass("loading")
             const seconds = 30;
             const redirector = {
@@ -186,7 +199,7 @@
                 ...redirector,
                 destroy: destructor(config, d.instance, redirector)
             };
-            if(!config.hasOwnProperty('redirectors')) {
+            if (!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
             config.redirectors[d.instance] = redirector;
@@ -194,10 +207,12 @@
             showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
             refreshPage();
         }
-        function failure(d){
+
+        function failure(d) {
             $("#cloud-div .loader").removeClass("loading")
             showNotification('Failed', d.responseText)
         }
+
         config['aws'] = {
             key_name: $('#aws-key').val(),
             access_key_id: $('#aws-access-key').val(),
@@ -209,15 +224,27 @@
             email: SETTINGS.account.email,
             agent: $('#select-agent option:selected').val(),
             platform: $('#aws-platform').val(),
-            callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
+            callback: $('#select-redirector option:selected').val() + ':' + SETTINGS.local.tcp_port,
+            instance_count: $('#instance-count').val(),
             config: {
                 key_name: config.aws.key_name.split('/').slice(-1)[0],
                 access_key_id: config.aws.access_key_id,
                 secret_access_key: config.aws.secret_access_key
             }
         }
-        const uri = $('#aws-platform').val() === 'gateway' ? '/range/aws/gateway' : '/range/aws'
-        const success = $('#aws-platform').val() === 'gateway' ? tunnelSuccess : rangeSuccess
+        debugger;
+        let uri, success;
+        let platformTarget = $('#aws-platform').val();
+        if (platformTarget === 'gateway') {
+            uri = '/range/aws/gateway';
+            success = tunnelSuccess;
+        } else if (platformTarget == 'splunk') {
+            uri = '/range/aws/splunk';
+            success = rangeSuccess;
+        } else {
+            uri = '/range/aws';
+            success = rangeSuccess;
+        }
         restRequest('POST', request, success, failure, uri)
     }
 
@@ -225,7 +252,7 @@
         $("#cloud-div .loader").addClass("loading")
         let config = getPluginConfig('Cloud')
 
-        function tunnelSuccess(d){
+        function tunnelSuccess(d) {
             $("#cloud-div .loader").removeClass("loading")
             const redirector = {
                 user: config.gcp.ssh_user,
@@ -235,7 +262,7 @@
                 ...redirector,
                 destroy: destructor(config, d.instance, redirector)
             };
-            if(!config.hasOwnProperty('redirectors')) {
+            if (!config.hasOwnProperty('redirectors')) {
                 config['redirectors'] = {}
             }
             config.redirectors[d.instance] = redirector
@@ -244,7 +271,7 @@
             refreshPage()
         }
 
-        function failure(d){
+        function failure(d) {
             $("#cloud-div .loader").removeClass("loading")
             showNotification('Failed', d.responseText)
         }
