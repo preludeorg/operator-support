@@ -193,8 +193,8 @@
                 buttons: ['OK'],
                 defaultId: 0,
                 title: 'Splunk Instance Credentials',
-                message: `Access splunk at:\nhttp://${d.instance_dns}:8000`,
-                detail: `Username: admin\nPassword: SPLUNK-${d.instance_id}`
+                message: `Access splunk using the following information:`,
+                detail: `http://${d.instance_dns}:8000\nUsername: admin\nPassword: SPLUNK-${d.instance_id}`
             })
         }
         function tunnelSuccess(d){
