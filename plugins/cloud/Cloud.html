@@ -21,9 +21,9 @@
             <p>Purpose</p>
             <select id="aws-platform">
                 <option value="gateway">Linux redirector</option>
+                <option value="splunk">Splunk Range</option>
                 <option value="windows">Compromised Windows server</option>
                 <option value="linux">Compromised Linux server</option>
-                <option value="darwin">Compromised Mac OS server</option>
             </select>
         </div>
         <div id="range-configs" style="display: none">
@@ -36,6 +36,13 @@
             <div id="redirectors" class="label-text">
                 <p>Redirector</p>
                 <select id="select-redirector"></select>
+            </div>
+        </div>
+        <div id="splunk-configs" style="display: none">
+            <div id="quantity" class="label-text">
+                <p>Windows Instance Quantity</p>
+                <div class="input-wrapper"><input id="instance-count" type="number" spellCheck="false" value="1"/>
+                </div>
             </div>
         </div>
         <div class="label-text">
@@ -137,11 +144,15 @@
             $('#' + ev.target.value).show()
         })
 
-        $('#aws-platform').on('change', function(ev) {
-            if(ev.target.value==='gateway'){
-                $('#range-configs').hide()
+        $('#aws-platform').on('change', function (ev) {
+            if (ev.target.value === 'gateway') {
+                $('#range-configs').hide();
+                $('#splunk-configs').hide();
+            } else if (ev.target.value === 'splunk') {
+                $('#range-configs').show();
+                $('#splunk-configs').show();
             } else {
-                $('#range-configs').show()
+                $('#range-configs').show();
             }
         })
     })
@@ -169,10 +180,50 @@
     function deployAWS(){
         $("#cloud-div .loader").addClass("loading")
         let config = getPluginConfig('Cloud')
-
+        let pollingInterval;
+        let pollingAttempts = 0;
         function rangeSuccess(d){
             $("#cloud-div .loader").removeClass("loading")
             showNotification('Deployed!', d.instance + ' may take several minutes to show up')
+        }
+        function splunkSuccess(d){
+            $("#cloud-div .loader").removeClass("loading");
+
+            if (!config.hasOwnProperty('ranges')) {
+                config['ranges'] = {}
+            }
+            config.ranges[d.splunk.dns] = {
+                'splunk': {'dns': d.splunk.dns, 'port': 8000, 'id': d.splunk.id, 'username': 'admin', 'password': `SPLUNK-${d.splunk.id}`},
+                'hosts': d.hosts
+            }
+            flushPluginConfig('Cloud', config);
+            showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.splunk.dns);
+            electron.ipcRenderer.invoke('show-message-box', {
+                type: 'info',
+                buttons: ['OK'],
+                defaultId: 0,
+                title: 'Splunk Range Provisioned',
+                message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
+                detail: `http://${config.ranges[d.splunk.dns]['splunk']['dns']}:${config.ranges[d.splunk.dns]['splunk']['port']}\nUsername: ${config.ranges[d.splunk.dns]['splunk']['username']}\nPassword: ${config.ranges[d.splunk.dns]['splunk']['password']}`
+            })
+            pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.splunk.dns]);
+        }
+        function splunkRangeActive(range) {
+            fetch(`http://${range['splunk']['dns']}:${range['splunk']['port']}`)
+                .then(res => {
+                    if (res.status === 200) {
+                        clearInterval(pollingInterval);
+                        showNotification('Splunk active!', 'Splunk is now live on ' + range['splunk']['dns']);
+                    } else {
+                        pollingAttempts++;
+                    }
+                }).catch(e => {
+                pollingAttempts++
+            });
+            if (pollingAttempts === 10) {
+                clearInterval(pollingInterval);
+                showNotification('Range failed!', 'Splunk did not start on ' + range['splunk']['dns'] + '. Start a new range.');
+            }
         }
         function tunnelSuccess(d){
             $("#cloud-div .loader").removeClass("loading")
@@ -210,14 +261,25 @@
             agent: $('#select-agent option:selected').val(),
             platform: $('#aws-platform').val(),
             callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
+            instance_count: $('#instance-count').val(),
             config: {
                 key_name: config.aws.key_name.split('/').slice(-1)[0],
                 access_key_id: config.aws.access_key_id,
                 secret_access_key: config.aws.secret_access_key
             }
         }
-        const uri = $('#aws-platform').val() === 'gateway' ? '/range/aws/gateway' : '/range/aws'
-        const success = $('#aws-platform').val() === 'gateway' ? tunnelSuccess : rangeSuccess
+        let uri, success;
+        let platformTarget = $('#aws-platform').val();
+        if (platformTarget === 'gateway') {
+            uri = '/range/aws/gateway';
+            success = tunnelSuccess;
+        } else if (platformTarget === 'splunk') {
+            uri = '/range/aws/splunk';
+            success = splunkSuccess;
+        } else {
+            uri = '/range/aws';
+            success = rangeSuccess;
+        }
         restRequest('POST', request, success, failure, uri)
     }
 
