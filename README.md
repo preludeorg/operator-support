@@ -9,7 +9,7 @@ Operator is an autonomous red team C2 platform, built by [Prelude](https://prelu
 
 You can download the latest copy of the application [here](https://www.prelude.org/download/current), for either MacOS, Windows or Linux. 
 
-> Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Reach out to us at support@prelude.org for more details.
+> Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Check out the [Pink Badge](https://www.prelude.org/training/pinkbadge) for more details.
 
 This repository contains the following:
 
