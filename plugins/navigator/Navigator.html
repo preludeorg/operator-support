@@ -7,7 +7,13 @@
 <select id="navigation-adversary" onchange="generateNavigatorLayer()">
     <option>Choose an adversary</option>
 </select>
-<object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" width="100%" height="100%" background="#fff;" style="filter: invert(100%) grayscale(100%); margin: 0 -20px; width: calc(100% + 20px);"></object>
+<object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" width="100%" height="45%" background="#fff;" style="filter: invert(100%) grayscale(100%); margin: 0 -20px; width: calc(100% + 20px);"></object>
+<div>
+    <div class="boxed-heading-container">
+        <p>Select a Navigator layer to create an adversary</p>
+<input type="file" accept=.json id=file>
+<button type="button" onclick="inputFunction(this.body)">Generate</button>
+</div>
 <script>
     $(document).ready(function () {
         loadAdversaries();
@@ -39,4 +45,34 @@
         storeData(layer, storedFile);
         showNotification('Generated layer', storedFile)
     }
+</script>
+<script>
+var uuid = uuidv4()
+            function inputFunction() {
+                var x = document.getElementById('file').files[0];
+                let inputPath = x.path
+                var data = JSON.parse(fs.readFileSync(inputPath));
+                let inputFile = Object.keys(data.techniques);
+                let outArr = new Array();
+                inputFile.forEach(key => {
+                    let technique = data.techniques[key];
+                    let techniqueId = technique.techniqueID;
+                    let tactic = technique.tactic;
+                    let operatorKeys = Object.keys(ATTACK);
+                    operatorKeys.forEach(key => {
+                        let procedure = ATTACK[key];
+                        let procedureId = procedure.id;
+                        let procedureTechId = procedure.technique.id;
+                        let procedureTactic = procedure.tactic;
+                    
+                    if (techniqueId == procedureTechId && tactic == procedureTactic) {
+                        outArr.push(procedureId);
+                    };
+                    });
+                });
+            
+                let input = {id: uuid, name: 'TEST NAV ADV', ttps: outArr , goals: [], };
+                createAdversary(input);
+                showNotification('Generated Adversary')
+            }
 </script>
