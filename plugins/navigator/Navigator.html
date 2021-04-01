@@ -60,16 +60,18 @@
     function inputFunction() {
         const file = document.getElementById('file').files[0];
         const data = JSON.parse(loadData(file.path));
-        const ttps = Object.values(data.techniques).reduce((acc, technique) => {
-            let techniqueId = technique.techniqueID;
-            let tactic = technique.tactic;
-            return acc.concat(Object.values(ATTACK).filter(procedure => {
-                const procedureTechId = procedure.technique.id;
-                const procedureTactic = procedure.tactic;        
-                return techniqueId == procedureTechId && tactic == procedureTactic;
-            }).map(procedure => procedure.id));
-        }, []);
-    
+
+        const lookup = Object.values(data.techniques).reduce((acc, technique) => ({
+            ...acc,
+            [technique.techniqueID]: {
+                ...acc[technique.techniqueID],
+                [technique.tactic]: true
+            }
+        }), {});
+        const ttps = Object.values(ATTACK)
+            .filter(procedure => (lookup[procedure.technique.id] || {})[procedure.tactic])
+            .map(procedure => procedure.id);
+
         createAdversary(Object.assign(createAdversary(), {
             name: 'TEST NAV ADV',
             ttps: ttps
