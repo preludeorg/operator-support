@@ -44,13 +44,9 @@
                         template.attr('id', `agent-${a.name}`)
                         template.find('#agent-name .main').text(a.name)
                         template.find('#agent-description').text(a.description)
-                        if (a.license != "community" && a.license != SETTINGS.account.license) {
-                            template.find('#agent-platforms').append($(`<span>Professional License Required</span>`))
-                        } else {
-                            template.find('#agent-platforms').append(a.platforms.map(p => a.package
-                                ? $(`<a href="#" onClick="downloadAgent('${a.package}', '${p}', '${a.package}-${p}${a.extensions?.[p] ? "."+a.extensions?.[p] : "" }')">${p}</a>`)
-                                : $(`<span>${p}</span>`))).append(a.package ? $(`<a href="#" onClick="downloadAgent('${a.package}', 'code', '${a.package}.zip')">Source Code</a>`) : '')
-                        }
+                        template.find('#agent-platforms').append(a.platforms.map(p => a.package
+                            ? $(`<a href="#" onClick="downloadAgent('${a.package}', '${p}', '${a.package}-${p}${a.extensions?.[p] ? "."+a.extensions?.[p] : "" }')">${p}</a>`)
+                            : $(`<span>${p}</span>`))).append(a.package ? $(`<a href="#" onClick="downloadAgent('${a.package}', 'code', '${a.package}.zip')">Source Code</a>`) : '')
                         template.find('#agent-name .aux').append(a.protocols.map(p => $(`<span>${p}</span>`)))
                         template.show()
                         agents.append(template)

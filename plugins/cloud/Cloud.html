@@ -229,13 +229,10 @@
         function tunnelSuccess(d){
             $("#cloud-div .loader").removeClass("loading")
             const seconds = 30;
-            let redirector = {
+            const redirector = {
                 user: 'ubuntu',
                 key: config.aws.key_name,
                 availableAt: new Date(Date.now() + (1000 * seconds))
-            }
-            if (SETTINGS.account.license === 'professional') {
-                redirector['password'] = request['password'];
             }
             REDIRECTORS[d.instance] = {
                 ...redirector,
@@ -275,9 +272,6 @@
         let uri, success;
         let platformTarget = $('#aws-platform').val();
         if (platformTarget === 'gateway') {
-            if (SETTINGS.account.license === 'professional') {
-                request['password'] = crypto.randomBytes(16).toString('hex');
-            }
             uri = '/range/aws/gateway';
             success = tunnelSuccess;
         } else if (platformTarget === 'splunk') {
