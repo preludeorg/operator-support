@@ -1,23 +1,35 @@
 <div class="profile-heading-container">
     <div class="body">
-        <strong class="profile-heading">Select a mode </strong>
-        <p>
-            This plugin will allow you to change between light and dark mode themes.
-        </p>
+        <strong class="profile-heading">Adjust the theme</strong>
+        <p>Change between light and dark mode or apply a custom theme</p>
+        <label>
+            <input id="theme-background" placeholder="Enter a URL to a background image" onchange="saveBackground()"/>
+        </label>
+        <br>
+        <button onclick="toggle_mode()">Toggle mode</button>
     </div>
 </div>
 <div id="init-plugin">
+    <script>
+        const config = getPluginConfig('ThemeChange');
+        if(config.background) {
+            $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        }
 
-<button onclick="toggle_mode()">Toggle mode</button>
-<script>
-function toggle_mode() {
-    var app = document.querySelector('body')
-    if (!app.classList.contains("inverted")) {
-        document.querySelector('body').classList.add('inverted')
-    }
-    else {
-        document.querySelector('body').classList.remove('inverted')
-    }       
-}
-</script>
+        function saveBackground(){
+            let config = getPluginConfig('ThemeChange');
+            config.background = $('#theme-background').val();
+            flushPluginConfig('ThemeChange', config);
+            $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        }
+
+        function toggle_mode() {
+            let app = document.querySelector('body')
+            if (!app.classList.contains("inverted")) {
+                document.querySelector('body').classList.add('inverted')
+            } else {
+                document.querySelector('body').classList.remove('inverted')
+            }
+        }
+    </script>
 </div>
