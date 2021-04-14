@@ -5,6 +5,7 @@
         <label>
             <input id="theme-background" placeholder="Enter a URL to a background image" onchange="saveBackground()"/>
         </label>
+        <button onclick="setRandomBackground()">Random background color</button>
         <br>
         <button onclick="toggle_mode()">Toggle mode</button>
     </div>
@@ -23,6 +24,12 @@
             $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
         }
 
+        function setRandomBackground() {
+            const randomColor = Math.floor(Math.random()*16777215).toString(16);
+            color = "#" + randomColor;
+            $('<style>.welcome-theme { background-color: '+color+';background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        }
+        
         function toggle_mode() {
             let app = document.querySelector('body')
             if (!app.classList.contains("inverted")) {
