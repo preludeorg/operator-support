@@ -7,6 +7,8 @@
         </label>
         <button onclick="setRandomBackground()">Random background color</button>
         <br>
+        <button onclick="resetBackground()">Reset background</button>
+        <br>
         <button onclick="toggle_mode()">Toggle mode</button>
     </div>
 </div>
@@ -25,11 +27,15 @@
         }
 
         function setRandomBackground() {
-            const randomColor = Math.floor(Math.random()*16777215).toString(16);
-            color = "#" + randomColor;
-            $('<style>.welcome-theme { background-color: '+color+';background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            $('<style>.welcome-theme { background-color: '+randomColor+';background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
         }
-        
+
+        function resetBackground() {
+            $('<style>.welcome-theme { background-color:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+            $('<style>.welcome-theme { background-image:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        }
+
         function toggle_mode() {
             let app = document.querySelector('body')
             if (!app.classList.contains("inverted")) {
