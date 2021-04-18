@@ -5,6 +5,9 @@
         <label>
             <input id="theme-background" placeholder="Enter a URL to a background image" onchange="saveBackground()"/>
         </label>
+        <button onclick="setRandomBackground()">Random background color</button>
+        <br>
+        <button onclick="resetBackground()">Reset background</button>
         <br>
         <button onclick="toggle_mode()">Toggle mode</button>
     </div>
@@ -21,6 +24,16 @@
             config.background = $('#theme-background').val();
             flushPluginConfig('ThemeChange', config);
             $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        }
+
+        function setRandomBackground() {
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            $('<style>.welcome-theme { background-color: '+randomColor+';background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        }
+
+        function resetBackground() {
+            $('<style>.welcome-theme { background-color:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+            $('<style>.welcome-theme { background-image:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
         }
 
         function toggle_mode() {
