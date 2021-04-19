@@ -55,8 +55,7 @@
         storeData(layer, storedFile);
         showNotification('Generated layer', storedFile);
     }
-</script>
-<script>
+
     function inputFunction() {
         const file = document.getElementById('file').files[0];
         const data = JSON.parse(loadData(file.path));
