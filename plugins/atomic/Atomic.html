@@ -1,0 +1,189 @@
+<style>
+  .tabs {
+    display: block;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -moz-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin: 0;
+    overflow: hidden; }
+  .tabs [class^="tab"] label,
+  .tabs [class*=" tab"] label {
+    color: #efedef;
+    cursor: pointer;
+    display: block;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1em;
+    padding: 2rem 0;
+    text-align: center; }
+  .tabs [class^="tab"] [type="radio"],
+  .tabs [class*=" tab"] [type="radio"] {
+    border-bottom: 1px solid rgba(239, 237, 239, 0.5);
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out; }
+  .tabs [class^="tab"] [type="radio"]:hover, .tabs [class^="tab"] [type="radio"]:focus,
+  .tabs [class*=" tab"] [type="radio"]:hover,
+  .tabs [class*=" tab"] [type="radio"]:focus {
+    border-bottom: 1px solid #fd264f; }
+  .tabs [class^="tab"] [type="radio"]:checked,
+  .tabs [class*=" tab"] [type="radio"]:checked {
+    border-bottom: 2px solid #fd264f; }
+  .tabs [class^="tab"] [type="radio"]:checked + div,
+  .tabs [class*=" tab"] [type="radio"]:checked + div {
+    opacity: 1; }
+  .tabs [class^="tab"] [type="radio"] + div,
+  .tabs [class*=" tab"] [type="radio"] + div {
+    display: block;
+    opacity: 0;
+    padding: 2rem 0;
+    width: 90%;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out; }
+  .tabs .tab-2 {
+    width: 50%; }
+  .tabs .tab-2 [type="radio"] + div {
+    width: 200%;
+    margin-left: 200%; }
+  .tabs .tab-2 [type="radio"]:checked + div {
+    margin-left: 0; }
+  .tabs .tab-2:last-child [type="radio"] + div {
+    margin-left: 100%; }
+  .tabs .tab-2:last-child [type="radio"]:checked + div {
+    margin-left: -100%; }
+  .canvas {
+    background-image: url("https://www.summitpartners.com/system/uploads/article/phase_2_image/262/4.30.2019_-_Red_Canary_-_News_Image.jpg");
+    background-size:cover;
+    background-repeat:no-repeat;
+    box-shadow: inset 0px 0px 400px 275px rgba(0, 0, 0, 1.0);}
+</style>
+
+<div class="profile-heading-container">
+  <div class="body">
+    <strong class="profile-heading">Manage your ART attacks</strong>
+    <p>
+      Atomic Red Team (ART) contains hundreds of TTPs which can be used to validate the defenses on a system or within
+      a network. This plugin allows you to import these attacks into Operator and manage them as native TTPs.
+    </p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab-2">
+    <label for="tab2-1">Import from GitHub</label>
+    <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+    <div>
+      <h4>Enter GitHub repo</h4>
+      <input value="https://github.com/redcanaryco/atomic-red-team.git" id="repo-target"/>
+      <br/>
+      <button onclick="handleRepoSubmit()" value='all'>Ingest repository</button>
+    </div>
+  </div>
+  <div class="tab-2">
+    <label for="tab2-2">Import from directory</label>
+    <input id="tab2-2" name="tabs-two" type="radio">
+    <div>
+      <h4>Enter local directory</h4>
+      <input placeholder="Example: /Users/susan/Code/atomics" id="dir-target"/>
+      <button onclick="handleDirSubmit()" value='all'>Ingest directory</button>
+    </div>
+  </div>
+</div>
+
+<div id="init-plugin">
+  <script>
+    TTP_LOAD_FUNCTIONS['art'] = loadRedCanary();
+    TTP_LOAD_FUNCTIONS['caldera'] = loadCaldera();
+
+    function normalize(n) {
+      const mapper = {macos: 'darwin', command_prompt: 'cmd', powershell: 'psh'};
+      return mapper.hasOwnProperty(n) ? mapper[n] : n;
+    }
+
+    function loadCaldera(data) {
+      try {
+        let procedures = [];
+        const payloadRepo = OPEN_PAYLOAD_REPO + '/caldera/';
+        data.forEach(ttp => {
+          let atk = {
+            id: ttp.id,
+            name: ttp.name,
+            description: ttp.description,
+            metadata: {version: 1, authors: ['MITRE'], tags: [], source: 'Caldera'},
+            tactic: ttp.tactic,
+            technique: {id: ttp.technique.attack_id, name: ttp.technique.name},
+            platforms: {}
+          };
+          Object.keys(ttp.platforms).forEach(function (p) {
+            atk.platforms[p] = {};
+            Object.keys(ttp.platforms[p]).forEach(function (e) {
+              if (ttp.platforms[p][e].command) {
+                e.split(',').forEach(function (ex) {
+                  atk.platforms[p][ex] = {command: ttp.platforms[p][e].command};
+                  if (ttp.platforms[p][e].payloads) {
+                    atk.platforms[p][ex]['payload'] = payloadRepo + ttp.platforms[p][e].payloads[0];
+                  }
+                });
+              }
+            });
+          });
+          if (validateTTP(atk))
+            procedures.push(atk);
+        });
+        return procedures;
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function loadRedCanary(data) {
+      try {
+        let procedures = [];
+        data.atomic_tests.forEach(ttp => {
+          let atk = {
+            id: ttp.auto_generated_guid,
+            name: ttp.name,
+            description: ttp.description,
+            metadata: {version: 1, authors: ['Atomic Red Team'], tags: [], source: 'Red Canary'},
+            tactic: TACTICS[(data.attack_technique || "").split(".")[0]] || "unknown",
+            technique: {id: data.attack_technique, name: data.display_name},
+            platforms: {}
+          };
+          ttp.supported_platforms.forEach(p => {
+            const platform = normalize(p);
+            const executor = normalize(ttp.executor.name)
+            atk.platforms[platform] = atk.platforms[platform] || {};
+            atk.platforms[platform][executor] = {command: escapeTtpCommand(executor, ttp.executor.command)};
+          });
+          if (validateTTP(atk))
+            procedures.push(atk);
+        });
+        return procedures;
+      } catch (e) {
+        return [];
+      }
+    }
+  </script>
+</div>
+
+<script>
+  function handleRepoSubmit() {
+    importTTPRepo($('#repo-target').val().split('https://github.com/')[1].split('.git')[0]);
+  }
+
+  function handleDirSubmit() {
+    importTTPDir($('#dir-target').val())
+  }
+</script>
