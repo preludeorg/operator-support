@@ -123,6 +123,7 @@
       "bash": [new RegExp(`^#(?!{)`), new RegExp(`[\\\\;]\\s*$`), new RegExp(`\\bthen\\s*$`)],
       "python": []
     };
+    command = command.replaceAll('#{', '#{art.');
     return command.trim().split('\n').reduce((acc, part, idx) => {
       if (!idx || CONTINUATIONS[executor].filter(r => r.exec(acc.trim())).length) {
         return acc + (idx ? "\n" : "") + part;
