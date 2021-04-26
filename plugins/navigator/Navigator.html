@@ -3,20 +3,15 @@
         <strong class="profile-heading">Navigator</strong>
         <p>This plugin acts as a connector to <a href="https://github.com/mitre-attack/attack-navigator">MITRE's ATT&CK Navigator</a>.The principal feature of the Navigator is the ability for users to define layers - custom views of the ATT&CK knowledge base - e.g. showing just those techniques for a particular platform or highlighting techniques a specific adversary has been known to use. Layers can be created interactively within the Navigator or generated programmatically and then visualized via the Navigator. </p>
     </div>
+    <br>
+    <p class="profile-heading" >Want to convert an existing layer file into an Operator adversary? <u><a onclick="document.querySelector('#file').click()">Click here to load it.</a></u></p>
 </div>
 <select id="navigation-adversary" onchange="generateNavigatorLayer()">
     <option>Choose an adversary</option>
 </select>
 <object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" background="#fff;" style="filter: invert(100%) grayscale(100%); margin: 0 -20px; width: calc(100% + 20px); height: 45%; min-height: 475px;"></object>
-<div class="profile-heading-container">
-    <div class="body">
-        <strong class="profile-heading">Select a Navigator layer to create an adversary</strong>
-        <p>Load an exported navigator layer to generate a new adversary from TTPs matching your selected techniques.</p>
-        <br />
-        <input style="display: none;" type="file" accept=".json" id="file" onchange="inputFunction()" />
-        <button type="button" onclick="document.querySelector('#file').click()">Generate</button>
-    </div>
-</div>
+<input style="display: none;" type="file" accept=".json" id="file" onchange="inputFunction()" />
+
 <script>
     $(document).ready(function () {
         loadAdversaries();
