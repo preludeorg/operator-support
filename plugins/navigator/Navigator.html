@@ -7,7 +7,16 @@
 <select id="navigation-adversary" onchange="generateNavigatorLayer()">
     <option>Choose an adversary</option>
 </select>
-<object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" width="100%" height="100%" background="#fff;" style="filter: invert(100%) grayscale(100%); margin: 0 -20px; width: calc(100% + 20px);"></object>
+<object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" background="#fff;" style="filter: invert(100%) grayscale(100%); margin: 0 -20px; width: calc(100% + 20px); height: 45%; min-height: 475px;"></object>
+<div class="profile-heading-container">
+    <div class="body">
+        <strong class="profile-heading">Select a Navigator layer to create an adversary</strong>
+        <p>Load an exported navigator layer to generate a new adversary from TTPs matching your selected techniques.</p>
+        <br />
+        <input style="display: none;" type="file" accept=".json" id="file" onchange="inputFunction()" />
+        <button type="button" onclick="document.querySelector('#file').click()">Generate</button>
+    </div>
+</div>
 <script>
     $(document).ready(function () {
         loadAdversaries();
@@ -21,22 +30,54 @@
 
     function generateNavigatorLayer(){
         fetch('https://raw.githubusercontent.com/preludeorg/operator-support/master/plugins/navigator/template.json')
-            .then(response => response.text())
-            .then((response) => {
-                constructLayerFile(response)
-            }).catch(err => console.log(err))
+            .then(res => res.json())
+            .then(constructLayerFile)
+            .catch(err => console.log(err))
     }
 
     function constructLayerFile(template) {
-        let data = []
         const adversary = ADVERSARIES[$("#navigation-adversary option:selected").val()];
-        adversary.ttps.forEach(ttp => {
-            const procedure = ATTACK[ttp];
-            data.push('{"tactic":"' + procedure.tactic + '","techniqueID":"' + procedure.technique.id.split('.', 1) + '","score":100,"color":"","comment":"","enabled":true,"metadata": [],"showSubtechniques":false}');
-        });
-        let layer = template.replace('"techniques": [],', ('"techniques" : [' + data.join(",\r\n") + '],'));
-        let storedFile = SETTINGS.local.workspace+'/plugins/Navigator/'+adversary.name+'.json'
+        const data = adversary.ttps.map(ttp => ATTACK[ttp]).map(procedure => ({
+            tactic: procedure.tactic,
+            techniqueID: procedure.technique.id.split('.', 1),
+            score: 100,
+            color: "",
+            comment: "",
+            enabled: true,
+            metadata: [],
+            showSubtechniques: false
+        }));
+        const layer = JSON.stringify({
+            ...template,
+            techniques: data
+        }, null, 2);
+        const storedFile = path.join(SETTINGS.local.workspace, 'plugins', 'Navigator', `${adversary.name}.json`);
         storeData(layer, storedFile);
-        showNotification('Generated layer', storedFile)
+        showNotification('Generated layer', storedFile);
+    }
+
+    function inputFunction() {
+        const file = document.getElementById('file').files[0];
+        const data = JSON.parse(loadData(file.path));
+
+        const lookup = Object.values(data.techniques).reduce((acc, technique) => ({
+            ...acc,
+            [technique.techniqueID]: {
+                ...acc[technique.techniqueID],
+                [technique.tactic]: true
+            }
+        }), {});
+        const ttps = Object.values(ATTACK)
+            .filter(procedure => (lookup[procedure.technique.id] || {})[procedure.tactic])
+            .map(procedure => procedure.id);
+
+        createAdversary(Object.assign(createAdversary(), {
+            name: 'User Generated Adversary',
+            ttps: ttps
+        }));
+
+        showNotification('Generated Adversary');
+
+        document.getElementById('file').value = '';
     }
 </script>
