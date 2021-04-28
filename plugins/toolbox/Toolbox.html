@@ -1,3 +1,8 @@
+<style>
+    .plugin-canvas {
+        background-image: url("https://st2.depositphotos.com/42774578/42425/i/450/depositphotos_424257142-stock-photo-dark-gray-sledge-hammer-black.jpg");
+    }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
 
 <div class="profile-heading-container">
@@ -13,7 +18,7 @@
 <h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
 <br>
 
-<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingest()"/>
+<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingestTool()"/>
 
 <ul id="tools" class="horizontal-list"></ul>
 
@@ -23,6 +28,7 @@
         <p id="tool-url"></p>
     </div>
     <div id="tool-actions" class="actions"></div>
+    <p id="tool-commit" style="font-weight:100;float:right"></p>
 </li>
 
 <div id="right-sidebar-readme" class="right-sidebar-half loader-container" style="display:none">
@@ -58,16 +64,17 @@
               let template = $('#tool-template').clone()
               template.attr('id', `tool-${tool}`)
               template.find('#tool-name .main').text(tool)
-              template.find('#tool-url').text(res.tools[tool].url)
+              template.find('#tool-url').text(res.tools[tool].url.split('github.com/')[1])
               template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">View</a>`))
               template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+              displayLastCommit(res.tools[tool].url, template)
               template.show()
               $('#tools').append(template)
           })
       })
   }
 
-  function ingest(){
+  function ingestTool(){
     const url = $('#newTool').val();
     if(url){
         exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
@@ -123,5 +130,15 @@
               sidebar.find('.loader').removeClass('loading');
           }, 250);
       });
+  }
+
+  function displayLastCommit(url, template){
+      try {
+          const repo = url.split('https://github.com/')[1].split('.git');
+          fetch(`https://api.github.com/repos/${repo[0]}/branches/master`)
+              .then(res => res.json()).then(res => {
+              template.find('#tool-commit').text(`Last commit: ${res.commit.commit.author.date.split('T')[0]}`);
+          })
+      } catch(ex) {}
   }
 </script>
