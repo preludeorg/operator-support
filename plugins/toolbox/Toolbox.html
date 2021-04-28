@@ -1,0 +1,127 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+
+<div class="profile-heading-container">
+  <div class="body">
+    <strong class="profile-heading">Manage your tools</strong>
+    <p>
+      Your toolbox contains all the utilities you use on a regular basis. Operator will keep these tools updated
+        so no need to manually pull latest code. Just enter the git address of any tool you want to track and Operator
+        will clone it into your toolbox and keep it updated. This plugin requires that GIT be installed on this computer.
+    </p>
+  </div>
+</div>
+<h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
+<br>
+
+<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingest()"/>
+
+<ul id="tools" class="horizontal-list"></ul>
+
+<li id="tool-template" class="profile" style="display:none;width:30%;margin:10px">
+    <div class="description">
+        <h3 id="tool-name" class="split"><span class="main"></span></h3>
+        <p id="tool-url"></p>
+    </div>
+    <div id="tool-actions" class="actions"></div>
+</li>
+
+<div id="right-sidebar-readme" class="right-sidebar-half loader-container" style="display:none">
+    <div class="top-right">
+        <img class="close-sidebar" src="../static/assets/close-icon.svg">
+    </div>
+    <div id="readme"></div>
+    <div class="loader"></div>
+</div>
+
+<div id="init-plugin">
+  <script>
+      createStorage([path.join(SETTINGS.local.workspace, "plugins", "Toolbox", "tools")])
+  </script>
+</div>
+
+<script>
+  const TOOLBOX = path.join(SETTINGS.local.workspace, "plugins", "Toolbox", "tools");
+
+  $(document).ready(function () {
+      $('#toolbox-location').text(TOOLBOX);
+      displayTools();
+  });
+
+  function displayTools(){
+      fetchOperator('/plugin/toolbox', {
+          method: 'GET'
+      }).then(res => res.json()).then(res => {
+          $('#newTool').val('');
+          $('#tools').empty();
+          Object.keys(res.tools)?.forEach(tool => {
+              updateTool(tool)
+              let template = $('#tool-template').clone()
+              template.attr('id', `tool-${tool}`)
+              template.find('#tool-name .main').text(tool)
+              template.find('#tool-url').text(res.tools[tool].url)
+              template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">View</a>`))
+              template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+              template.show()
+              $('#tools').append(template)
+          })
+      })
+  }
+
+  function ingest(){
+    const url = $('#newTool').val();
+    if(url){
+        exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
+            if (error) {
+                showNotification('Failed to download!', stderr);
+                return;
+            }
+            const name = url.split('/').pop().split('.')[0];
+            fetchOperator('/plugin/toolbox', {
+                method: 'GET'
+            }).then(res => res.json()).then(res => {
+                let tool = {};
+                tool[name] = {'url':url};
+                res['tools'] = Object.assign({}, res.tools, tool);
+                fetchOperator('/plugin/toolbox', {
+                    method: 'POST',
+                    body: JSON.stringify(res)
+                })
+            }).then(displayTools);
+            showNotification('Successful download', `${name} is now ready to use`);
+        });
+    }
+  }
+
+  function removeTool(name){
+      fetchOperator('/plugin/toolbox', {
+          method: 'GET'
+      }).then(res => res.json()).then(res => {
+          delete res.tools[name]
+          deleteDir(path.join(TOOLBOX, name))
+          fetchOperator('/plugin/toolbox', {
+              method: 'POST',
+              body: JSON.stringify(res)
+          })
+      }).then(displayTools);
+  }
+
+  function updateTool(name){
+      exec('git pull', {
+          stdio: [0, 1, 2],
+          cwd: path.join(TOOLBOX, name)
+      })
+  }
+
+  function viewTool(name){
+      const readme = loadData(path.join(TOOLBOX, name, "README.md"))
+      let converter = new showdown.Converter(),
+          text = readme, html = converter.makeHtml(text);
+      launchSidebar($('#right-sidebar-readme'), (sidebar) => {
+          sidebar.find('.loader').addClass('loading');
+          sidebar.find('#readme').html(html);
+          setTimeout(() => {
+              sidebar.find('.loader').removeClass('loading');
+          }, 250);
+      });
+  }
+</script>
