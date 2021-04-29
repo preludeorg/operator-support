@@ -68,10 +68,10 @@
                 let template = $('#tool-template').clone()
                 template.attr('id', `tool-${tool}`)
                 template.find('#tool-name .main').text(tool)
-                template.find('#tool-url').text(res.tools[tool].url.split('github.com/')[1])
-                template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">README</a>`))
-                template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Commits</a>`))
+                template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
+                template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
                 template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+                lastUpdated(tool);
                 template.show()
                 $('#tools').append(template)
             })
@@ -137,7 +137,7 @@
     }
 
     function commitHistory(name){
-        exec(`git log -5`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+        exec(`git log -n25 --pretty='format:%cd %s' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
             launchSidebar($('#right-sidebar-readme'), (sidebar) => {
                 sidebar.find('.loader').addClass('loading');
                 sidebar.find('#readme').html(`<pre>${stdout}</pre>`);
@@ -145,6 +145,13 @@
                     sidebar.find('.loader').removeClass('loading');
                 }, 250);
             });
+        })
+    }
+
+    function lastUpdated(name){
+        exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+            console.log(stdout)
+            $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
         })
     }
 </script>
