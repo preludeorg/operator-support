@@ -19,14 +19,15 @@
         <strong class="profile-heading">Manage your tools</strong>
         <p>
             Your toolbox contains all the utilities you use on a regular basis. Operator will keep these tools updated
-            so no need to manually pull latest code. Just enter the git address of any tool you want to track and Operator
-            will clone it into your toolbox and keep it updated. This plugin requires that GIT be installed on this computer.
+            so no need to manually pull latest code. Just enter the address of any tool you want to track and Operator
+            will clone it into your toolbox and keep it updated. Unsure where to start? <a onclick="installStarterKit()">Install our starter kit</a>
+            to get bootstrapped. This plugin requires that GIT be installed on this computer.
         </p>
     </div>
 </div>
 <h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
 <br>
-<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingestTool()"/>
+<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingestTool(this.value)"/>
 <br>
 <ul id="tools" class="horizontal-list" style="margin: 0 -10px; width: calc(100% + 20px);"></ul>
 
@@ -78,8 +79,7 @@
         })
     }
 
-    function ingestTool(){
-        const url = $('#newTool').val();
+    function ingestTool(url){
         if(url){
             exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
                 if (error) {
@@ -150,8 +150,25 @@
 
     function lastUpdated(name){
         exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
-            console.log(stdout)
             $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
         })
+    }
+
+    function installStarterKit(){
+        const kit = [
+            'https://github.com/preludeorg/pneuma',
+            'https://github.com/mitre/stockpile',
+            'https://github.com/redcanaryco/atomic-red-team.git',
+            'https://github.com/nmap/nmap.git',
+            'https://github.com/sqlmapproject/sqlmap.git',
+            'https://github.com/zaproxy/zaproxy.git',
+            'https://github.com/greenbone/openvas-scanner.git',
+            'https://github.com/sullo/nikto.git',
+            'https://github.com/trufflesecurity/truffleHog.git',
+            'https://github.com/xmendez/wfuzz.git',
+            'https://github.com/zmap/zmap.git',
+            'https://github.com/curtbraz/PhishAPI.git'
+        ]
+        kit.forEach(repo => { ingestTool(repo); })
     }
 </script>
