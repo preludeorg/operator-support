@@ -112,7 +112,7 @@
       "cmd": " &\n",
       "sh": ";\n",
       "bash": ";\n",
-      "python": ";\n",
+      "python": "\n",
       "manual": ";\n"
     };
     const CONTINUATIONS = {
@@ -123,7 +123,7 @@
       "bash": [new RegExp(`^#(?!{)`), new RegExp(`[\\\\;]\\s*$`), new RegExp(`\\bthen\\s*$`)],
       "python": []
     };
-    command = command.replaceAll('#{', '#{art.');
+    command = command.replaceAll(/#{([a-zA-Z0-9_\.\|]+)}/g, "#{art.$1}");
     return command.trim().split('\n').reduce((acc, part, idx) => {
       if (!idx || CONTINUATIONS[executor].filter(r => r.exec(acc.trim())).length) {
         return acc + (idx ? "\n" : "") + part;
