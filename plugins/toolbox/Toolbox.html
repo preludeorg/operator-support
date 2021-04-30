@@ -11,6 +11,12 @@
     #right-sidebar-readme a {
         color: #fff;
     }
+    .tool-tag {
+        font-weight: 100;
+        font-size: 8px;
+        float: right;
+        text-transform: uppercase;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
 
@@ -19,14 +25,15 @@
         <strong class="profile-heading">Manage your tools</strong>
         <p>
             Your toolbox contains all the utilities you use on a regular basis. Operator will keep these tools updated
-            so no need to manually pull latest code. Just enter the git address of any tool you want to track and Operator
-            will clone it into your toolbox and keep it updated. This plugin requires that GIT be installed on this computer.
+            so no need to manually pull latest code. Just enter the address of any tool you want to track and Operator
+            will clone it into your toolbox and keep it updated. Unsure where to start? <a onclick="installStarterKit()">Install our starter kit</a>
+            to get bootstrapped. This plugin requires that GIT be installed on this computer.
         </p>
     </div>
 </div>
 <h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
 <br>
-<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingestTool()"/>
+<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingestTool(this.value)"/>
 <br>
 <ul id="tools" class="horizontal-list" style="margin: 0 -10px; width: calc(100% + 20px);"></ul>
 
@@ -36,6 +43,7 @@
         <p id="tool-url"></p>
     </div>
     <div id="tool-actions" class="actions"></div>
+    <p id="tool-tag" class="tool-tag"></p>
 </li>
 
 <div id="right-sidebar-readme" class="right-sidebar-half loader-container doc-block" style="display:none">
@@ -71,6 +79,7 @@
                 template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
                 template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
                 template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+                template.find('#tool-tag').text(res.tools[tool].tag)
                 lastUpdated(tool);
                 template.show()
                 $('#tools').append(template)
@@ -78,8 +87,7 @@
         })
     }
 
-    function ingestTool(){
-        const url = $('#newTool').val();
+    function ingestTool(url, tag='unknown'){
         if(url){
             exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
                 if (error) {
@@ -91,7 +99,7 @@
                     method: 'GET'
                 }).then(res => res.json()).then(res => {
                     let tool = {};
-                    tool[name] = {'url':url};
+                    tool[name] = {'url':url, 'tag':tag};
                     res['tools'] = Object.assign({}, res.tools, tool);
                     fetchOperator('/plugin/toolbox', {
                         method: 'POST',
@@ -150,8 +158,21 @@
 
     function lastUpdated(name){
         exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
-            console.log(stdout)
             $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
         })
+    }
+
+    function installStarterKit(){
+        const kit = [
+            {'tag':'agent', 'url':'https://github.com/preludeorg/pneuma'},
+            {'tag':'ttp', 'url':'https://github.com/mitre/stockpile'},
+            {'tag':'ttp', 'url':'https://github.com/redcanaryco/atomic-red-team.git'},
+            {'tag':'exploit', 'url':'https://github.com/sqlmapproject/sqlmap.git'},
+            {'tag':'recon', 'url':'https://github.com/nmap/nmap.git'},
+            {'tag':'recon', 'url':'https://github.com/sullo/nikto.git'},
+            {'tag':'recon', 'url':'https://github.com/trufflesecurity/truffleHog.git'},
+            {'tag':'phishing', 'url':'https://github.com/curtbraz/PhishAPI.git'}
+        ]
+        kit.forEach(repo => { ingestTool(repo.url, repo.tag); })
     }
 </script>
