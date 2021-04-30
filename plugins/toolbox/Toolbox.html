@@ -11,6 +11,12 @@
     #right-sidebar-readme a {
         color: #fff;
     }
+    .tool-tag {
+        font-weight: 100;
+        font-size: 8px;
+        float: right;
+        text-transform: uppercase;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
 
@@ -37,6 +43,7 @@
         <p id="tool-url"></p>
     </div>
     <div id="tool-actions" class="actions"></div>
+    <p id="tool-tag" class="tool-tag"></p>
 </li>
 
 <div id="right-sidebar-readme" class="right-sidebar-half loader-container doc-block" style="display:none">
@@ -72,6 +79,7 @@
                 template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
                 template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
                 template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+                template.find('#tool-tag').text(res.tools[tool].tag)
                 lastUpdated(tool);
                 template.show()
                 $('#tools').append(template)
@@ -79,7 +87,7 @@
         })
     }
 
-    function ingestTool(url){
+    function ingestTool(url, tag='unknown'){
         if(url){
             exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
                 if (error) {
@@ -91,7 +99,7 @@
                     method: 'GET'
                 }).then(res => res.json()).then(res => {
                     let tool = {};
-                    tool[name] = {'url':url};
+                    tool[name] = {'url':url, 'tag':tag};
                     res['tools'] = Object.assign({}, res.tools, tool);
                     fetchOperator('/plugin/toolbox', {
                         method: 'POST',
@@ -156,19 +164,15 @@
 
     function installStarterKit(){
         const kit = [
-            'https://github.com/preludeorg/pneuma',
-            'https://github.com/mitre/stockpile',
-            'https://github.com/redcanaryco/atomic-red-team.git',
-            'https://github.com/nmap/nmap.git',
-            'https://github.com/sqlmapproject/sqlmap.git',
-            'https://github.com/zaproxy/zaproxy.git',
-            'https://github.com/greenbone/openvas-scanner.git',
-            'https://github.com/sullo/nikto.git',
-            'https://github.com/trufflesecurity/truffleHog.git',
-            'https://github.com/xmendez/wfuzz.git',
-            'https://github.com/zmap/zmap.git',
-            'https://github.com/curtbraz/PhishAPI.git'
+            {'tag':'agent', 'url':'https://github.com/preludeorg/pneuma'},
+            {'tag':'ttp', 'url':'https://github.com/mitre/stockpile'},
+            {'tag':'ttp', 'url':'https://github.com/redcanaryco/atomic-red-team.git'},
+            {'tag':'exploit', 'url':'https://github.com/sqlmapproject/sqlmap.git'},
+            {'tag':'recon', 'url':'https://github.com/nmap/nmap.git'},
+            {'tag':'recon', 'url':'https://github.com/sullo/nikto.git'},
+            {'tag':'recon', 'url':'https://github.com/trufflesecurity/truffleHog.git'},
+            {'tag':'phishing', 'url':'https://github.com/curtbraz/PhishAPI.git'}
         ]
-        kit.forEach(repo => { ingestTool(repo); })
+        kit.forEach(repo => { ingestTool(repo.url, repo.tag); })
     }
 </script>
