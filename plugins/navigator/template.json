@@ -1,9 +1,9 @@
 {
 	"name": "layer",
 	"versions": {
-		"attack": "8",
-		"navigator": "4.2",
-		"layer": "4.1"
+		"attack": "9",
+		"navigator": "4.3",
+		"layer": "4.2"
 	},
 	"domain": "enterprise-attack",
 	"description": "",
@@ -14,9 +14,7 @@
 			"Windows",
 			"Office 365",
 			"Azure AD",
-			"AWS",
-			"GCP",
-			"Azure",
+			"IaaS",
 			"SaaS",
 			"PRE",
 			"Network"
