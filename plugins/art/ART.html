@@ -26,11 +26,13 @@
       fetchOperator('/plugin/art', {
         method: 'GET'
       }).then(res => res.json()).then(res => {
-        Object.keys(res.facts).forEach(name => {
-          let temp = res?.facts[name];
-          res.facts[name] = function (v) { return temp } ;
-        })
-        monkey('facts', 'art', res.facts);
+        if(res.facts){
+          Object.keys(res.facts).forEach(name => {
+            let temp = res.facts[name];
+            res.facts[name] = function (v) { return temp } ;
+          })
+          monkey('facts', 'art', res.facts);
+        }
       })
     }
     patchArtFacts();

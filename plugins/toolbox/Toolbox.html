@@ -71,19 +71,21 @@
         }).then(res => res.json()).then(res => {
             $('#newTool').val('');
             $('#tools').empty();
-            Object.keys(res.tools)?.forEach(tool => {
-                updateTool(tool)
-                let template = $('#tool-template').clone()
-                template.attr('id', `tool-${tool}`)
-                template.find('#tool-name .main').text(tool)
-                template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
-                template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
-                template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
-                template.find('#tool-tag').text(res.tools[tool].tag)
-                lastUpdated(tool);
-                template.show()
-                $('#tools').append(template)
-            })
+            if(res.tools){
+                Object.keys(res.tools).forEach(tool => {
+                    updateTool(tool)
+                    let template = $('#tool-template').clone()
+                    template.attr('id', `tool-${tool}`)
+                    template.find('#tool-name .main').text(tool)
+                    template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
+                    template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
+                    template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+                    template.find('#tool-tag').text(res.tools[tool].tag)
+                    lastUpdated(tool);
+                    template.show()
+                    $('#tools').append(template)
+                })
+            }
         })
     }
 
