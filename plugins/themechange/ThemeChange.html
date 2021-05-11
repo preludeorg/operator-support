@@ -15,16 +15,26 @@
 </div>
 <div id="init-plugin">
     <script>
-        const config = getPluginConfig('ThemeChange');
-        if(config.background) {
-            $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
-        }
+        fetchOperator('/plugin/ThemeChange', {
+            method: 'GET'
+        }).then(res => res.json()).then(config => {
+            if(config.background) {
+                $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+            }
+        });
 
         function saveBackground(){
-            let config = getPluginConfig('ThemeChange');
-            config.background = $('#theme-background').val();
-            flushPluginConfig('ThemeChange', config);
-            $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+            fetchOperator('/plugin/ThemeChange', {
+                method: 'GET'
+            }).then(res => res.json()).then(config => {
+                config.background = $('#theme-background').val();
+                fetchOperator('/plugin/ThemeChange', {
+                    method: 'POST',
+                    body: JSON.stringify(config)
+                }).then(() => {
+                    $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+                });
+            });
         }
 
         function setRandomBackground() {
