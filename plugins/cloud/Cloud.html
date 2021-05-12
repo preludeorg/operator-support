@@ -88,11 +88,13 @@
 
 <div id="init-plugin">
     <script>
-        console.log("ASKDJHASKJDHSJDHASKJDH");
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                    debugger;
+                    EVENTS.listeners('redirector:destroy').map(listener => {
+                        EVENTS.off('redirector:destroy', listener);
+                    });
+
                     EVENTS.on('redirector:destroy', (ev) => {
                         const host = ev.host;
                         new Promise((resolve, reject) => {
