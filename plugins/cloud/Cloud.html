@@ -131,9 +131,15 @@
                                 }).then(resolve).catch(reject);
                             }
                         }).then(() => {
-                            EVENTS.emit(`redirector:destroyed:${ev.uuid}`, null);
+                            EVENTS.emit('redirector:destroyed', {
+                                uuid: uuid,
+                                error: null
+                            });
                         }).catch((err) => {
-                            EVENTS.emit(`redirector:destroyed:${ev.uuid}`, err);
+                            EVENTS.emit('redirector:destroyed', {
+                                uuid: uuid,
+                                error: err
+                            });
                         });
                     });
 
