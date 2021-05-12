@@ -192,8 +192,9 @@ az account show --query id -o tsv</code>
     }
 
     function refreshPage(){
-        const config = getPluginConfig('AzureInitialAccess');
-        setAzureElems(config);
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            setAzureElems(config);
+        });
     }
 
     function setAzureElems(config) {
@@ -207,15 +208,15 @@ az account show --query id -o tsv</code>
     function saveCredentials() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
         const creds = $('#provide-credentials');
-        const config = getPluginConfig('AzureInitialAccess');
-        config['azure'] = {
-            tenant_id: creds.find('#tenant-id').val(),
-            subscription_id: creds.find('#subscription-id').val(),
-            app_id: creds.find('#app-id').val(),
-            app_password: creds.find('#app-password').val()
-        };
-        debugger;
-        flushPluginConfig('AzureInitialAccess', config);
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['azure'] = {
+                tenant_id: creds.find('#tenant-id').val(),
+                subscription_id: creds.find('#subscription-id').val(),
+                app_id: creds.find('#app-id').val(),
+                app_password: creds.find('#app-password').val()
+            };
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)});
+        });
         testCredentials(config);
     }
 
@@ -246,46 +247,54 @@ az account show --query id -o tsv</code>
 
     function launchAgents() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
-        const config = getPluginConfig('AzureInitialAccess');
-        let editor = document.querySelector('#launch-config').querySelector('.CodeMirror').CodeMirror;
-        let liveConfig = JSON.parse(editor.getValue());
-        debugger;
-        config['agent'] = liveConfig['agent'];
-        config['targets'] = liveConfig['targets'];
-        Object.entries(config.targets.virtual_machines).forEach(([k, v]) => {
-            let command = {
-                commandId: (k === 'windows') ? "RunPowerShellScript" : "RunShellScript",
-                script: config.agent.initial_access[k]
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['azure'] = {
+                tenant_id: creds.find('#tenant-id').val(),
+                subscription_id: creds.find('#subscription-id').val(),
+                app_id: creds.find('#app-id').val(),
+                app_password: creds.find('#app-password').val()
             };
-            fetchAzure(`/resourceGroups/${config.targets.resource_group}/providers/Microsoft.Compute/virtualMachines/${v}/runCommand`, 'POST', '2020-12-01', config, command)
-                .then(res => {
-                    if (res.status === 202) {
-                        alert(`SUCCESS: Launched an agent on ${v}`);
-                    } else {
-                        alert(`FAILED: Unable to run an agent on ${v}`);
-                    }
+            let editor = document.querySelector('#launch-config').querySelector('.CodeMirror').CodeMirror;
+            let liveConfig = JSON.parse(editor.getValue());
+            config['agent'] = liveConfig['agent'];
+            config['targets'] = liveConfig['targets'];
+            Object.entries(config.targets.virtual_machines).forEach(([k, v]) => {
+                let command = {
+                    commandId: (k === 'windows') ? "RunPowerShellScript" : "RunShellScript",
+                    script: config.agent.initial_access[k]
+                };
+                fetchAzure(`/resourceGroups/${config.targets.resource_group}/providers/Microsoft.Compute/virtualMachines/${v}/runCommand`, 'POST', '2020-12-01', config, command)
+                    .then(res => {
+                        if (res.status === 202) {
+                            alert(`SUCCESS: Launched an agent on ${v}`);
+                        } else {
+                            alert(`FAILED: Unable to run an agent on ${v}`);
+                        }
+                        $("#AzureInitialAccess-div .loader").removeClass("loading");
+                    }).catch(e => {
                     $("#AzureInitialAccess-div .loader").removeClass("loading");
-                }).catch(e => {
-                $("#AzureInitialAccess-div .loader").removeClass("loading");
-            })
+                })
+            });
         });
     }
 
     function saveTargets() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
-        const config = getPluginConfig('AzureInitialAccess');
-        config['targets'] = {
-            resource_group: $('#resource-groups').val(),
-            virtual_machines: {}
-        };
-        [...document.querySelectorAll('#virtual-machines :checked')].forEach(opt => {
-            const os = opt.getAttribute('data-os');
-            if (!config['targets']['virtual_machines'].hasOwnProperty(os)) config['targets']['virtual_machines'][os] = [];
-            config['targets']['virtual_machines'][os].push(opt.value);
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['targets'] = {
+                resource_group: $('#resource-groups').val(),
+                virtual_machines: {}
+            };
+            [...document.querySelectorAll('#virtual-machines :checked')].forEach(opt => {
+                const os = opt.getAttribute('data-os');
+                if (!config['targets']['virtual_machines'].hasOwnProperty(os)) config['targets']['virtual_machines'][os] = [];
+                config['targets']['virtual_machines'][os].push(opt.value);
+            });
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
+                showCard('configure-agents');
+                $("#AzureInitialAccess-div .loader").removeClass("loading");
+            });
         });
-        flushPluginConfig('AzureInitialAccess', config);
-        showCard('configure-agents');
-        $("#AzureInitialAccess-div .loader").removeClass("loading");
     }
 
     function saveAgent() {
@@ -295,17 +304,19 @@ az account show --query id -o tsv</code>
         let agentSelect = document.getElementById('select-agent');
         let agentOpt = agentSelect.options[agentSelect.selectedIndex];
         if (callback === 'manual') callback = $('#manual-callback').val();
-        const config = getPluginConfig('AzureInitialAccess');
-        config['agent'] = {
-            agent: agentOpt.value,
-            initial_access: Object.entries(JSON.parse(window.atob(agentOpt.getAttribute('data-initial_access')))).reduce((acc, [k, v]) => {
-                if (config?.targets.virtual_machines.hasOwnProperty(k)) return {...acc, ...{[k]: v?.script.trim().replace("#{callback}", AUTOMATIC_FACTS['operator'][protocol]({callback: callback})).replace("#{contact}", protocol).split('\n')}}
-                return acc;
-            }, {})
-        };
-        flushPluginConfig('AzureInitialAccess', config);
-        showCard('review-config');
-        $("#AzureInitialAccess-div .loader").removeClass("loading");
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['agent'] = {
+                agent: agentOpt.value,
+                initial_access: Object.entries(JSON.parse(window.atob(agentOpt.getAttribute('data-initial_access')))).reduce((acc, [k, v]) => {
+                    if (config?.targets.virtual_machines.hasOwnProperty(k)) return {...acc, ...{[k]: v?.script.trim().replace("#{callback}", AUTOMATIC_FACTS['operator'][protocol]({callback: callback})).replace("#{contact}", protocol).split('\n')}}
+                    return acc;
+                }, {})
+            };
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
+                showCard('review-config');
+                $("#AzureInitialAccess-div .loader").removeClass("loading");
+            });
+        });
     }
 
     function populateReviewCard(config) {
@@ -411,45 +422,47 @@ az account show --query id -o tsv</code>
     function showCard(id) {
         $('.AzureInitialAccess-card').map((i, elem) => $(`#${elem.id}`).hide());
         $('#plugin-header').hide();
-        const config = getPluginConfig('AzureInitialAccess');
-        switch (id) {
-            case 'review-config':
-                populateReviewCard(config);
-                break;
-            case 'configure-agents':
-                populateAgentCard(config);
-                break;
-            case 'provide-credentials':
-                $('#plugin-header').show();
-                break;
-        }
-        $(`#${id}`).show();
-        populateNavigationBar();
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            switch (id) {
+                case 'review-config':
+                    populateReviewCard(config);
+                    break;
+                case 'configure-agents':
+                    populateAgentCard(config);
+                    break;
+                case 'provide-credentials':
+                    $('#plugin-header').show();
+                    break;
+            }
+            $(`#${id}`).show();
+            populateNavigationBar();
+        });
     }
 
     function handleListVmsInResourceGroup(ev) {
         if (ev.target.value !== undefined) {
-            const config = getPluginConfig('AzureInitialAccess');
-            let vmElem = $("#virtual-machines");
-            vmElem.empty();
-            vmElem.on('change', (ev) => {
-                (vmElem.val() !== null && vmElem.val().length > 0) ? document.getElementById('target-save').disabled = false : document.getElementById('target-save').disabled = true;
-            });
-            $("#AzureInitialAccess-div .loader").addClass("loading");
-            fetchAzure(`/resourceGroups/${ev.target.value}/providers/Microsoft.Compute/virtualMachines`, 'GET', '2020-12-01', config)
-                .then(res => {
-                    if (res.status === 200) {
-                        return res.json();
-                    }
-                })
-                .then(res => {
-                    res?.value.forEach(vm => {
-                        let option = new Option(vm.name, vm.name);
-                        (vm.properties.osProfile.hasOwnProperty('windowsConfiguration')) ? option.setAttribute('data-os', 'windows') : option.setAttribute('data-os', 'linux');
-                        vmElem.append(option);
-                    });
-                    $("#AzureInitialAccess-div .loader").removeClass("loading");
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+                let vmElem = $("#virtual-machines");
+                vmElem.empty();
+                vmElem.on('change', (ev) => {
+                    (vmElem.val() !== null && vmElem.val().length > 0) ? document.getElementById('target-save').disabled = false : document.getElementById('target-save').disabled = true;
                 });
+                $("#AzureInitialAccess-div .loader").addClass("loading");
+                fetchAzure(`/resourceGroups/${ev.target.value}/providers/Microsoft.Compute/virtualMachines`, 'GET', '2020-12-01', config)
+                    .then(res => {
+                        if (res.status === 200) {
+                            return res.json();
+                        }
+                    })
+                    .then(res => {
+                        res?.value.forEach(vm => {
+                            let option = new Option(vm.name, vm.name);
+                            (vm.properties.osProfile.hasOwnProperty('windowsConfiguration')) ? option.setAttribute('data-os', 'windows') : option.setAttribute('data-os', 'linux');
+                            vmElem.append(option);
+                        });
+                        $("#AzureInitialAccess-div .loader").removeClass("loading");
+                    });
+            });
         }
     }
 
