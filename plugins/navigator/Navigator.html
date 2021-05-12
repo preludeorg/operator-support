@@ -13,11 +13,16 @@
 <input style="display: none;" type="file" accept=".json" id="file" onchange="inputFunction()" />
 
 <script>
-    fetchOperator('/adversary', {
-        method: 'GET'
-    })
-    .then(res => res.json())
-    .then(adversaries => {
+    Promise.all([
+        fetchOperator('/adversary', {
+            method: 'GET'
+        })
+        .then(res => res.json()),
+        fetchOperator('/attack', {
+            method: 'GET'
+        })
+        .then(res => res.json())
+    ]).then(([adversaries, attack]) => {
         Object.values(adversaries).forEach(adv => {
             $('#navigation-adversary').append(new Option(adv.name, adv.id))
         });
@@ -31,7 +36,7 @@
 
         function constructLayerFile(template) {
             const adversary = adversaries[$("#navigation-adversary option:selected").val()];
-            const data = adversary.ttps.map(ttp => ATTACK[ttp]).map(procedure => ({
+            const data = adversary.ttps.map(ttp => attack[ttp]).map(procedure => ({
                 tactic: procedure.tactic,
                 techniqueID: procedure.technique.id.split('.', 1),
                 score: 100,
@@ -61,7 +66,7 @@
                     [technique.tactic]: true
                 }
             }), {});
-            const ttps = Object.values(ATTACK)
+            const ttps = Object.values(attack)
                 .filter(procedure => (lookup[procedure.technique.id] || {})[procedure.tactic])
                 .map(procedure => procedure.id);
 
