@@ -52,7 +52,7 @@
             <p>Private key path</p>
             <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
         </div>
-        <button id="aws-deploy" onclick="deployAWS()">Deploy</button>
+        <button id="aws-deploy">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
         <div class="label-text">
@@ -81,32 +81,308 @@
             <p>Project-wide SSH key file path</p>
             <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
         </div>
-        <button id="gcp-deploy" onclick="deployGCP()">Deploy</button>
+        <button id="gcp-deploy">Deploy</button>
     </div>
     <div class="loader"></div>
 </div>
 
 <div id="init-plugin">
     <script>
-        function destructor(config, host, redirector) {
-            return (() => new Promise((resolve, reject) => {
-                if (/.*amazonaws\.com$/gi.exec(host)) {
+        fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+            function destructor(config, host, redirector) {
+                return (() => new Promise((resolve, reject) => {
+                    if (/.*amazonaws\.com$/gi.exec(host)) {
+                        let request = {
+                            token: settings.account.token,
+                            email: settings.account.email,
+                            host: host,
+                            config: {
+                                key_name: path.basename(config.aws.key_name),
+                                access_key_id: config.aws.access_key_id,
+                                secret_access_key: config.aws.secret_access_key
+                            }
+                        }
+                        fetchGatekeeper('/range/aws/gateway', {
+                            method: 'DELETE',
+                            body: JSON.stringify(request)
+                        }).then(resolve).catch(reject);
+                    } else {
+                        let request = {
+                            token: settings.account.token,
+                            email: settings.account.email,
+                            host: host,
+                            config: {
+                                user_id: config.gcp.user_id,
+                                project: config.gcp.project,
+                                key_name: config.gcp.ssh_key,
+                                rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
+                            }
+                        }
+                        fetchGatekeeper('/range/gcp/gateway', {
+                            method: 'DELETE',
+                            body: JSON.stringify(request)
+                        }).then(resolve).catch(reject);
+                    }
+                }));
+            };
+
+            $(document).ready(function () {
+                fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                    fetchOperator('/internal/config/redirectors', {
+                        method: 'POST',
+                        body: JSON.stringify(Object.entries(config.redirectors ? config.redirectors : {}).reduce((acc, [host, redirector]) => ({
+                            ...acc,
+                            [host]: {
+                                ...redirector,
+                                destroy: destructor(config, host, config.redirectors[host]).toString()
+                            }
+                        }), {}))
+                    });
+                });
+            });
+        });
+    </script>
+</div>
+<script>
+    fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+        $(document).ready(function () {
+            $("#aws-deploy").click(deployAWS);
+            $("#gcp-deploy").click(deployGCP);
+
+            buildOptions();
+            refreshPage();
+
+            $('#cloud-provider').on('change', (ev) => {
+                Array.from(ev.target).forEach(opt => $('#' + opt.value).hide())
+                $('#' + ev.target.value).show()
+            })
+
+            $('#aws-platform').on('change', function (ev) {
+                if (ev.target.value === 'gateway') {
+                    $('#range-configs').hide();
+                    $('#splunk-configs').hide();
+                } else if (ev.target.value === 'splunk') {
+                    $('#range-configs').show();
+                    $('#splunk-configs').show();
+                } else {
+                    $('#range-configs').show();
+                }
+            })
+        });
+
+        function buildOptions(){
+            fetchGatekeeper(constructEndpoint('/range', {
+                email: settings.account.email,
+                token: settings.account.token
+            }), {
+                method: 'GET'
+            }).then(res => res.json()).then(res => {
+                $('#aws-platform').empty();
+                Object.keys(res).forEach(option => {
+                    $('#aws-platform').append(`<option value="${option}" data-tools="${res[option].tools}">${option} server</option>`)
+                })
+            });
+        }
+
+        function refreshPage(){
+            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                $('#aws-key').val(config.aws?.key_name || '')
+                $('#aws-access-key').val(config.aws?.access_key_id || '')
+                $('#aws-secret-key').val(config.aws?.secret_access_key || '')
+                setGCPElems(config)
+                $("#select-redirector").empty()
+                Object.keys(REDIRECTORS).forEach(host => {
+                    $('#select-redirector').append(`<option value="${host}">${host}</option>`)
+                })
+            });
+        }
+
+        function setGCPElems(config) {
+            const gcp = $('#gcp')
+            gcp.find('#user_id').val(config.gcp?.user_id || '')
+            gcp.find('#project').val(config.gcp?.project || '')
+            gcp.find('#rsa_key').val(config.gcp?.rsa_key || '')
+            gcp.find('#ssh_user').val(config.gcp?.ssh_user || '')
+            gcp.find('#ssh_key').val(config.gcp?.ssh_key || '')
+        }
+
+        function deployAWS(){
+            $("#cloud-div .loader").addClass("loading")
+            
+            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                let pollingInterval;
+                let pollingAttempts = 0;
+                function rangeSuccess(d){
+                    $("#cloud-div .loader").removeClass("loading")
+                    showNotification('Deployed!', d.instance + ' may take several minutes to show up')
+                }
+                function splunkSuccess(d){
+                    $("#cloud-div .loader").removeClass("loading");
+
+                    if (!config.hasOwnProperty('ranges')) {
+                        config['ranges'] = {}
+                    }
+                    config.ranges[d.splunk.dns] = {
+                        'splunk': {'dns': d.splunk.dns, 'port': 8000, 'id': d.splunk.id, 'username': 'admin', 'password': `SPLUNK-${d.splunk.id}`},
+                        'hosts': d.hosts
+                    }
+                    fetchOperator('/plugin/Cloud', {
+                        method: 'POST',
+                        body: JSON.stringify(config)
+                    }).then(res => res.json()).then(config => {
+                        showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.splunk.dns);
+                        electron.ipcRenderer.invoke('show-message-box', {
+                            type: 'info',
+                            buttons: ['OK'],
+                            defaultId: 0,
+                            title: 'Splunk Range Provisioned',
+                            message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
+                            detail: `http://${config.ranges[d.splunk.dns]['splunk']['dns']}:${config.ranges[d.splunk.dns]['splunk']['port']}\nUsername: ${config.ranges[d.splunk.dns]['splunk']['username']}\nPassword: ${config.ranges[d.splunk.dns]['splunk']['password']}`
+                        })
+                        pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.splunk.dns]);
+                    });
+                }
+                function splunkRangeActive(range) {
+                    fetch(`http://${range['splunk']['dns']}:${range['splunk']['port']}`)
+                        .then(res => {
+                            if (res.status === 200) {
+                                clearInterval(pollingInterval);
+                                showNotification('Splunk active!', 'Splunk is now live on ' + range['splunk']['dns']);
+                            } else {
+                                pollingAttempts++;
+                            }
+                        }).catch(e => {
+                        pollingAttempts++
+                    });
+                    if (pollingAttempts === 10) {
+                        clearInterval(pollingInterval);
+                        showNotification('Range failed!', 'Splunk did not start on ' + range['splunk']['dns'] + '. Start a new range.');
+                    }
+                }
+                function tunnelSuccess(d){
+                    $("#cloud-div .loader").removeClass("loading")
+                    const seconds = 30;
+                    let redirector = {
+                        user: 'ubuntu',
+                        key: config.aws.key_name,
+                        availableAt: new Date(Date.now() + (1000 * seconds))
+                    }
+                    if (settings.account.license === 'professional') {
+                        redirector['password'] = request['password'];
+                    }
+                    REDIRECTORS[d.instance] = {
+                        ...redirector,
+                        destroy: destructor(config, d.instance, redirector)
+                    };
+                    if(!config.hasOwnProperty('redirectors')) {
+                        config['redirectors'] = {}
+                    }
+                    config.redirectors[d.instance] = redirector;
+                    fetchOperator('/plugin/Cloud', {
+                        method: 'POST',
+                        body: JSON.stringify(config)
+                    }).then(res => res.json()).then(config => {
+                        showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
+                        refreshPage();
+                    });
+                }
+                function failure(d){
+                    $("#cloud-div .loader").removeClass("loading")
+                    showNotification('Failed', d.responseText)
+                }
+                config['aws'] = {
+                    key_name: $('#aws-key').val(),
+                    access_key_id: $('#aws-access-key').val(),
+                    secret_access_key: $('#aws-secret-key').val()
+                }
+                fetchOperator('/plugin/Cloud', {
+                    method: 'POST',
+                    body: JSON.stringify(config)
+                }).then(res => res.json()).then(config => {
                     let request = {
-                        token: SETTINGS.account.token,
-                        email: SETTINGS.account.email,
-                        host: host,
+                        token: settings.account.token,
+                        email: settings.account.email,
+                        agent: $('#select-agent option:selected').val(),
+                        platform: $('#aws-platform').val(),
+                        callback: $('#select-redirector option:selected').val()+':'+settings.local.tcp_port,
+                        instance_count: $('#instance-count').val(),
+                        tools: $('#aws-platform').find(':selected').attr('data-tools').split(','),
                         config: {
-                            key_name: path.basename(config.aws.key_name),
+                            key_name: config.aws.key_name.split('/').slice(-1)[0],
                             access_key_id: config.aws.access_key_id,
                             secret_access_key: config.aws.secret_access_key
                         }
                     }
-                    restRequest('DELETE', request, resolve, reject, '/range/aws/gateway')
-                } else {
+                    let uri, success;
+                    let platformTarget = $('#aws-platform').val();
+                    if (platformTarget === 'gateway') {
+                        if (settings.account.license === 'professional') {
+                            request['password'] = crypto.randomBytes(16).toString('hex');
+                        }
+                        uri = '/range/aws/gateway';
+                        success = tunnelSuccess;
+                    } else if (platformTarget === 'splunk') {
+                        uri = '/range/aws/splunk';
+                        success = splunkSuccess;
+                    } else {
+                        uri = '/range/aws';
+                        success = rangeSuccess;
+                    }
+                    fetchGatekeeper(uri, {
+                        method: 'POST',
+                        body: JSON.stringify(request)
+                    }).then(res => res.json()).then(success).catch(failure);
+                });
+            });
+        }
+
+        function deployGCP() {
+            $("#cloud-div .loader").addClass("loading")
+
+            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                function tunnelSuccess(d){
+                    $("#cloud-div .loader").removeClass("loading")
+                    const redirector = {
+                        user: config.gcp.ssh_user,
+                        key: config.gcp.ssh_key
+                    }
+                    REDIRECTORS[d.instance] = {
+                        ...redirector,
+                        destroy: destructor(config, d.instance, redirector)
+                    };
+                    if(!config.hasOwnProperty('redirectors')) {
+                        config['redirectors'] = {}
+                    }
+                    config.redirectors[d.instance] = redirector
+                    fetchOperator('/plugin/Cloud', {
+                        method: 'POST',
+                        body: JSON.stringify(config)
+                    }).then(res => res.json()).then(config => {
+                        showNotification('Success!', 'Your redirector is now available')
+                        refreshPage()
+                    });
+                }
+
+                function failure(d){
+                    $("#cloud-div .loader").removeClass("loading")
+                    showNotification('Failed', d.responseText)
+                }
+
+                const gcp = $('#gcp')
+                config['gcp'] = {
+                    user_id: gcp.find('#user_id').val(),
+                    project: gcp.find('#project').val(),
+                    ssh_user: gcp.find('#ssh_user').val(),
+                    ssh_key: gcp.find('#ssh_key').val(),
+                    rsa_key: gcp.find('#rsa_key').val()
+                }
+                fetchOperator('/plugin/Cloud', {
+                    method: 'POST',
+                    body: JSON.stringify(config)
+                }).then(res => res.json()).then(config => {
                     let request = {
-                        token: SETTINGS.account.token,
-                        email: SETTINGS.account.email,
-                        host: host,
+                        token: settings.account.token,
+                        email: settings.account.email,
                         config: {
                             user_id: config.gcp.user_id,
                             project: config.gcp.project,
@@ -114,241 +390,13 @@
                             rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
                         }
                     }
-                    restRequest('DELETE', request, resolve, reject, '/range/gcp/gateway')
-                }
-            }));
-        }
-
-        $(document).ready(function () {
-            let config = getPluginConfig('Cloud')
-            Object.keys(config.redirectors ? config.redirectors : {}).forEach(host => {
-                REDIRECTORS[host] = {
-                    ...config.redirectors[host],
-                    destroy: destructor(config, host, config.redirectors[host])
-                }
-            })
-        })
-    </script>
-</div>
-<script>
-    $(document).ready(function () {
-        buildOptions();
-        refreshPage()
-
-        $('#cloud-provider').on('change', (ev) => {
-            Array.from(ev.target).forEach(opt => $('#' + opt.value).hide())
-            $('#' + ev.target.value).show()
-        })
-
-        $('#aws-platform').on('change', function (ev) {
-            if (ev.target.value === 'gateway') {
-                $('#range-configs').hide();
-                $('#splunk-configs').hide();
-            } else if (ev.target.value === 'splunk') {
-                $('#range-configs').show();
-                $('#splunk-configs').show();
-            } else {
-                $('#range-configs').show();
-            }
-        })
-    })
-
-    function buildOptions(){
-        fetchGatekeeper(constructEndpoint('/range', {
-            email: SETTINGS.account.email,
-            token: SETTINGS.account.token
-        }), {
-            method: 'GET'
-        }).then(res => res.json()).then(res => {
-            $('#aws-platform').empty();
-            Object.keys(res).forEach(option => {
-                $('#aws-platform').append(`<option value="${option}" data-tools="${res[option].tools}">${option} server</option>`)
-            })
-        });
-    }
-
-    function refreshPage(){
-        const config = getPluginConfig('Cloud')
-        $('#aws-key').val(config.aws?.key_name || '')
-        $('#aws-access-key').val(config.aws?.access_key_id || '')
-        $('#aws-secret-key').val(config.aws?.secret_access_key || '')
-        setGCPElems(config)
-        $("#select-redirector").empty()
-        Object.keys(REDIRECTORS).forEach(host => {
-            $('#select-redirector').append(`<option value="${host}">${host}</option>`)
-        })
-    }
-
-    function setGCPElems(config) {
-        const gcp = $('#gcp')
-        gcp.find('#user_id').val(config.gcp?.user_id || '')
-        gcp.find('#project').val(config.gcp?.project || '')
-        gcp.find('#rsa_key').val(config.gcp?.rsa_key || '')
-        gcp.find('#ssh_user').val(config.gcp?.ssh_user || '')
-        gcp.find('#ssh_key').val(config.gcp?.ssh_key || '')
-    }
-
-    function deployAWS(){
-        $("#cloud-div .loader").addClass("loading")
-        let config = getPluginConfig('Cloud')
-        let pollingInterval;
-        let pollingAttempts = 0;
-        function rangeSuccess(d){
-            $("#cloud-div .loader").removeClass("loading")
-            showNotification('Deployed!', d.instance + ' may take several minutes to show up')
-        }
-        function splunkSuccess(d){
-            $("#cloud-div .loader").removeClass("loading");
-
-            if (!config.hasOwnProperty('ranges')) {
-                config['ranges'] = {}
-            }
-            config.ranges[d.splunk.dns] = {
-                'splunk': {'dns': d.splunk.dns, 'port': 8000, 'id': d.splunk.id, 'username': 'admin', 'password': `SPLUNK-${d.splunk.id}`},
-                'hosts': d.hosts
-            }
-            flushPluginConfig('Cloud', config);
-            showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.splunk.dns);
-            electron.ipcRenderer.invoke('show-message-box', {
-                type: 'info',
-                buttons: ['OK'],
-                defaultId: 0,
-                title: 'Splunk Range Provisioned',
-                message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
-                detail: `http://${config.ranges[d.splunk.dns]['splunk']['dns']}:${config.ranges[d.splunk.dns]['splunk']['port']}\nUsername: ${config.ranges[d.splunk.dns]['splunk']['username']}\nPassword: ${config.ranges[d.splunk.dns]['splunk']['password']}`
-            })
-            pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.splunk.dns]);
-        }
-        function splunkRangeActive(range) {
-            fetch(`http://${range['splunk']['dns']}:${range['splunk']['port']}`)
-                .then(res => {
-                    if (res.status === 200) {
-                        clearInterval(pollingInterval);
-                        showNotification('Splunk active!', 'Splunk is now live on ' + range['splunk']['dns']);
-                    } else {
-                        pollingAttempts++;
-                    }
-                }).catch(e => {
-                pollingAttempts++
+                    const uri = '/range/gcp/gateway'
+                    fetchGatekeeper(uri, {
+                        method: 'POST',
+                        body: JSON.stringify(request)
+                    }).then(res => res.json()).then(tunnelSuccess).catch(failure);
+                });
             });
-            if (pollingAttempts === 10) {
-                clearInterval(pollingInterval);
-                showNotification('Range failed!', 'Splunk did not start on ' + range['splunk']['dns'] + '. Start a new range.');
-            }
         }
-        function tunnelSuccess(d){
-            $("#cloud-div .loader").removeClass("loading")
-            const seconds = 30;
-            let redirector = {
-                user: 'ubuntu',
-                key: config.aws.key_name,
-                availableAt: new Date(Date.now() + (1000 * seconds))
-            }
-            if (SETTINGS.account.license === 'professional') {
-                redirector['password'] = request['password'];
-            }
-            REDIRECTORS[d.instance] = {
-                ...redirector,
-                destroy: destructor(config, d.instance, redirector)
-            };
-            if(!config.hasOwnProperty('redirectors')) {
-                config['redirectors'] = {}
-            }
-            config.redirectors[d.instance] = redirector;
-            flushPluginConfig('Cloud', config);
-            showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
-            refreshPage();
-        }
-        function failure(d){
-            $("#cloud-div .loader").removeClass("loading")
-            showNotification('Failed', d.responseText)
-        }
-        config['aws'] = {
-            key_name: $('#aws-key').val(),
-            access_key_id: $('#aws-access-key').val(),
-            secret_access_key: $('#aws-secret-key').val()
-        }
-        flushPluginConfig('Cloud', config)
-        let request = {
-            token: SETTINGS.account.token,
-            email: SETTINGS.account.email,
-            agent: $('#select-agent option:selected').val(),
-            platform: $('#aws-platform').val(),
-            callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
-            instance_count: $('#instance-count').val(),
-            tools: $('#aws-platform').find(':selected').attr('data-tools').split(','),
-            config: {
-                key_name: config.aws.key_name.split('/').slice(-1)[0],
-                access_key_id: config.aws.access_key_id,
-                secret_access_key: config.aws.secret_access_key
-            }
-        }
-        let uri, success;
-        let platformTarget = $('#aws-platform').val();
-        if (platformTarget === 'gateway') {
-            if (SETTINGS.account.license === 'professional') {
-                request['password'] = crypto.randomBytes(16).toString('hex');
-            }
-            uri = '/range/aws/gateway';
-            success = tunnelSuccess;
-        } else if (platformTarget === 'splunk') {
-            uri = '/range/aws/splunk';
-            success = splunkSuccess;
-        } else {
-            uri = '/range/aws';
-            success = rangeSuccess;
-        }
-        restRequest('POST', request, success, failure, uri)
-    }
-
-    function deployGCP() {
-        $("#cloud-div .loader").addClass("loading")
-        let config = getPluginConfig('Cloud')
-
-        function tunnelSuccess(d){
-            $("#cloud-div .loader").removeClass("loading")
-            const redirector = {
-                user: config.gcp.ssh_user,
-                key: config.gcp.ssh_key
-            }
-            REDIRECTORS[d.instance] = {
-                ...redirector,
-                destroy: destructor(config, d.instance, redirector)
-            };
-            if(!config.hasOwnProperty('redirectors')) {
-                config['redirectors'] = {}
-            }
-            config.redirectors[d.instance] = redirector
-            flushPluginConfig('Cloud', config)
-            showNotification('Success!', 'Your redirector is now available')
-            refreshPage()
-        }
-
-        function failure(d){
-            $("#cloud-div .loader").removeClass("loading")
-            showNotification('Failed', d.responseText)
-        }
-
-        const gcp = $('#gcp')
-        config['gcp'] = {
-            user_id: gcp.find('#user_id').val(),
-            project: gcp.find('#project').val(),
-            ssh_user: gcp.find('#ssh_user').val(),
-            ssh_key: gcp.find('#ssh_key').val(),
-            rsa_key: gcp.find('#rsa_key').val()
-        }
-        flushPluginConfig('Cloud', config)
-        let request = {
-            token: SETTINGS.account.token,
-            email: SETTINGS.account.email,
-            config: {
-                user_id: config.gcp.user_id,
-                project: config.gcp.project,
-                key_name: config.gcp.ssh_key,
-                rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
-            }
-        }
-        const uri = '/range/gcp/gateway'
-        restRequest('POST', request, tunnelSuccess, failure, uri)
-    }
+    });
 </script>
