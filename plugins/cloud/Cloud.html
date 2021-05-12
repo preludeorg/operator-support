@@ -88,56 +88,54 @@
 
 <div id="init-plugin">
     <script>
+        console.log("ASKDJHASKJDHSJDHASKJDH");
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
-            function destructor(config, host, redirector) {
-                return (() => new Promise((resolve, reject) => {
-                    if (/.*amazonaws\.com$/gi.exec(host)) {
-                        let request = {
-                            token: settings.account.token,
-                            email: settings.account.email,
-                            host: host,
-                            config: {
-                                key_name: path.basename(config.aws.key_name),
-                                access_key_id: config.aws.access_key_id,
-                                secret_access_key: config.aws.secret_access_key
-                            }
-                        }
-                        fetchGatekeeper('/range/aws/gateway', {
-                            method: 'DELETE',
-                            body: JSON.stringify(request)
-                        }).then(resolve).catch(reject);
-                    } else {
-                        let request = {
-                            token: settings.account.token,
-                            email: settings.account.email,
-                            host: host,
-                            config: {
-                                user_id: config.gcp.user_id,
-                                project: config.gcp.project,
-                                key_name: config.gcp.ssh_key,
-                                rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
-                            }
-                        }
-                        fetchGatekeeper('/range/gcp/gateway', {
-                            method: 'DELETE',
-                            body: JSON.stringify(request)
-                        }).then(resolve).catch(reject);
-                    }
-                }));
-            };
-
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                    fetchOperator('/internal/config/redirectors', {
-                        method: 'POST',
-                        body: JSON.stringify(Object.entries(config.redirectors ? config.redirectors : {}).reduce((acc, [host, redirector]) => ({
-                            ...acc,
-                            [host]: {
-                                ...redirector,
-                                destroy: destructor(config, host, config.redirectors[host]).toString()
+                    debugger;
+                    EVENTS.on('redirector:destroy', (ev) => {
+                        const host = ev.host;
+                        new Promise((resolve, reject) => {
+                            if (/.*amazonaws\.com$/gi.exec(host)) {
+                                let request = {
+                                    token: settings.account.token,
+                                    email: settings.account.email,
+                                    host: host,
+                                    config: {
+                                        key_name: path.basename(config.aws.key_name),
+                                        access_key_id: config.aws.access_key_id,
+                                        secret_access_key: config.aws.secret_access_key
+                                    }
+                                }
+                                fetchGatekeeper('/range/aws/gateway', {
+                                    method: 'DELETE',
+                                    body: JSON.stringify(request)
+                                }).then(resolve).catch(reject);
+                            } else {
+                                let request = {
+                                    token: settings.account.token,
+                                    email: settings.account.email,
+                                    host: host,
+                                    config: {
+                                        user_id: config.gcp.user_id,
+                                        project: config.gcp.project,
+                                        key_name: config.gcp.ssh_key,
+                                        rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
+                                    }
+                                }
+                                fetchGatekeeper('/range/gcp/gateway', {
+                                    method: 'DELETE',
+                                    body: JSON.stringify(request)
+                                }).then(resolve).catch(reject);
                             }
-                        }), {}))
+                        }).then(() => {
+                            EVENTS.emit(`redirector:destroyed:${ev.uuid}`, null);
+                        }).catch((err) => {
+                            EVENTS.emit(`redirector:destroyed:${ev.uuid}`, err);
+                        });
                     });
+
+                    fetchOperator('/internal/config/redirectors', {method: 'POST', body: JSON.stringify(config.redirectors)});
                 });
             });
         });
@@ -191,9 +189,11 @@
                 $('#aws-secret-key').val(config.aws?.secret_access_key || '')
                 setGCPElems(config)
                 $("#select-redirector").empty()
-                Object.keys(REDIRECTORS).forEach(host => {
-                    $('#select-redirector').append(`<option value="${host}">${host}</option>`)
-                })
+                fetchOperator('/internal/config/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
+                    Object.keys(redirectors).forEach(host => {
+                        $('#select-redirector').append(`<option value="${host}">${host}</option>`)
+                    })
+                });
             });
         }
 
@@ -270,14 +270,16 @@
                     if (settings.account.license === 'professional') {
                         redirector['password'] = request['password'];
                     }
-                    REDIRECTORS[d.instance] = {
-                        ...redirector,
-                        destroy: destructor(config, d.instance, redirector)
-                    };
+
+                    fetchOperator('/internal/config/redirectors', {method: 'POST', body: JSON.stringify({
+                        [d.instance]: redirector
+                    })});
+
                     if(!config.hasOwnProperty('redirectors')) {
                         config['redirectors'] = {}
                     }
                     config.redirectors[d.instance] = redirector;
+
                     fetchOperator('/plugin/Cloud', {
                         method: 'POST',
                         body: JSON.stringify(config)
@@ -346,10 +348,11 @@
                         user: config.gcp.ssh_user,
                         key: config.gcp.ssh_key
                     }
-                    REDIRECTORS[d.instance] = {
-                        ...redirector,
-                        destroy: destructor(config, d.instance, redirector)
-                    };
+
+                    fetchOperator('/internal/config/redirectors', {method: 'POST', body: JSON.stringify({
+                        [d.instance]: redirector
+                    })});
+
                     if(!config.hasOwnProperty('redirectors')) {
                         config['redirectors'] = {}
                     }
