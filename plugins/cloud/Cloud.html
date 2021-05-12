@@ -275,12 +275,14 @@
         let uri, success;
         let platformTarget = $('#aws-platform').val();
         if (platformTarget === 'gateway') {
+            request['tools'] = ['switchboard']
             if (SETTINGS.account.license === 'professional') {
                 request['password'] = crypto.randomBytes(16).toString('hex');
             }
             uri = '/range/aws/gateway';
             success = tunnelSuccess;
         } else if (platformTarget === 'splunk') {
+            request['tools'] = ['splunk', 'sysmon']
             uri = '/range/aws/splunk';
             success = splunkSuccess;
         } else {
