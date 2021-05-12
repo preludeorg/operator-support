@@ -2,7 +2,7 @@
     <div class="body">
         <strong class="profile-heading">Cloud resources</strong>
         <p>
-            Deploy either new redirectors, to accept beacons over the internet, or new compromised servers, to build
+            Deploy either new redirector gateways, to accept beacons over the internet, or new compromised servers, to build
             a custom test range and execute attacks on various operating systems.
         </p>
     </div>
@@ -10,7 +10,7 @@
 
 <div id="cloud-div" class="loader-container">
     <div class="label-text">
-        <p>Purpose</p>
+        <p>Provider</p>
         <select id="cloud-provider">
             <option value="aws">Amazon Web Services (AWS)</option>
             <option value="gcp">Google Cloud Platform (GCP)</option>
@@ -19,12 +19,7 @@
     <div id="aws">
         <div class="label-text">
             <p>Purpose</p>
-            <select id="aws-platform">
-                <option value="gateway">Linux redirector</option>
-                <option value="splunk">Splunk Range</option>
-                <option value="windows">Compromised Windows server</option>
-                <option value="linux">Compromised Linux server</option>
-            </select>
+            <select id="aws-platform"></select>
         </div>
         <div id="range-configs" style="display: none">
             <div id="agents" class="label-text">
@@ -137,6 +132,7 @@
 </div>
 <script>
     $(document).ready(function () {
+        buildOptions();
         refreshPage()
 
         $('#cloud-provider').on('change', (ev) => {
@@ -156,6 +152,20 @@
             }
         })
     })
+
+    function buildOptions(){
+        fetchGatekeeper(constructEndpoint('/range', {
+            email: SETTINGS.account.email,
+            token: SETTINGS.account.token
+        }), {
+            method: 'GET'
+        }).then(res => res.json()).then(res => {
+            $('#aws-platform').empty();
+            Object.keys(res).forEach(option => {
+                $('#aws-platform').append(`<option value="${option}" data-tools="${res[option].tools}">${option} server</option>`)
+            })
+        });
+    }
 
     function refreshPage(){
         const config = getPluginConfig('Cloud')
@@ -266,6 +276,7 @@
             platform: $('#aws-platform').val(),
             callback: $('#select-redirector option:selected').val()+':'+SETTINGS.local.tcp_port,
             instance_count: $('#instance-count').val(),
+            tools: $('#aws-platform').find(':selected').attr('data-tools').split(','),
             config: {
                 key_name: config.aws.key_name.split('/').slice(-1)[0],
                 access_key_id: config.aws.access_key_id,
@@ -275,14 +286,12 @@
         let uri, success;
         let platformTarget = $('#aws-platform').val();
         if (platformTarget === 'gateway') {
-            request['tools'] = ['switchboard']
             if (SETTINGS.account.license === 'professional') {
                 request['password'] = crypto.randomBytes(16).toString('hex');
             }
             uri = '/range/aws/gateway';
             success = tunnelSuccess;
         } else if (platformTarget === 'splunk') {
-            request['tools'] = ['splunk', 'sysmon']
             uri = '/range/aws/splunk';
             success = splunkSuccess;
         } else {
