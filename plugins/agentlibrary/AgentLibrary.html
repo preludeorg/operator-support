@@ -28,64 +28,68 @@
         grabAvailableAgents()
     })
     function grabAvailableAgents() {
-        fetchGatekeeper(constructEndpoint(`/agents`, {
-                email: SETTINGS.account.email,
-                token: SETTINGS.account.token
-            }), {
-                method: 'GET',
-                redirect: 'follow'
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    let agents = $("#listing")
-                    agents.empty()
-                    data.forEach(a => {
-                        let template = $('#agent-template').clone()
-                        template.attr('id', `agent-${a.name}`)
-                        template.find('#agent-name .main').text(a.name)
-                        template.find('#agent-description').text(a.description)
-                        if (a.license != "community" && a.license != SETTINGS.account.license) {
-                            template.find('#agent-platforms').append($(`<span>Professional License Required</span>`))
-                        } else {
-                            template.find('#agent-platforms').append(a.platforms.map(p => a.package
-                                ? $(`<a href="#" onClick="downloadAgent('${a.package}', '${p}', '${a.package}-${p}${a.extensions?.[p] ? "."+a.extensions?.[p] : "" }')">${p}</a>`)
-                                : $(`<span>${p}</span>`))).append(a.package ? $(`<a href="#" onClick="downloadAgent('${a.package}', 'code', '${a.package}.zip')">Source Code</a>`) : '')
-                        }
-                        template.find('#agent-name .aux').append(a.protocols.map(p => $(`<span>${p}</span>`)))
-                        template.show()
-                        agents.append(template)
-                    })
+        fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+            fetchGatekeeper(constructEndpoint(`/agents`, {
+                    email: settings.account.email,
+                    token: settings.account.token
+                }), {
+                    method: 'GET',
+                    redirect: 'follow'
                 })
-                .catch((e) => console.log(e))
+                    .then((res) => res.json())
+                    .then((data) => {
+                        let agents = $("#listing")
+                        agents.empty()
+                        data.forEach(a => {
+                            let template = $('#agent-template').clone()
+                            template.attr('id', `agent-${a.name}`)
+                            template.find('#agent-name .main').text(a.name)
+                            template.find('#agent-description').text(a.description)
+                            if (a.license != "community" && a.license != settings.account.license) {
+                                template.find('#agent-platforms').append($(`<span>Professional License Required</span>`))
+                            } else {
+                                template.find('#agent-platforms').append(a.platforms.map(p => a.package
+                                    ? $(`<a href="#" onClick="downloadAgent('${a.package}', '${p}', '${a.package}-${p}${a.extensions?.[p] ? "."+a.extensions?.[p] : "" }')">${p}</a>`)
+                                    : $(`<span>${p}</span>`))).append(a.package ? $(`<a href="#" onClick="downloadAgent('${a.package}', 'code', '${a.package}.zip')">Source Code</a>`) : '')
+                            }
+                            template.find('#agent-name .aux').append(a.protocols.map(p => $(`<span>${p}</span>`)))
+                            template.show()
+                            agents.append(template)
+                        })
+                    })
+                    .catch((e) => console.log(e))
+        })
     }
     function downloadAgent(agent, platform, filename) {
-        function getDownloadDir() {
-            switch (os.platform()) {
-                case 'darwin':
-                    return `${process.env.HOME}/Downloads`
-                case 'linux':
-                    return '/tmp'
-                case 'win32':
-                    return 'C:\\Users\\Public'
+        fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+            function getDownloadDir() {
+                switch (os.platform()) {
+                    case 'darwin':
+                        return `${process.env.HOME}/Downloads`
+                    case 'linux':
+                        return '/tmp'
+                    case 'win32':
+                        return 'C:\\Users\\Public'
+                }
             }
-        }
-        fetchGatekeeper(constructEndpoint(`/agents/${agent}`, {
-                email: SETTINGS.account.email,
-                token: SETTINGS.account.token,
-                platform: platform
-            })).then((res) => {
-                    if (res.status === 200) {
-                        return res.blob()
-                    }
-                })
-                .then((blob) => blob.arrayBuffer())
-                .then((data) => {
-                    let dir = getDownloadDir()
-                    let target = path.join(dir, filename)
-                    storeData(Buffer.from(data), target)
-                    fs.chmodSync(target, '755')
-                    showNotification('Downloaded File', `Downloaded ${filename} to ${dir}`)
-                })
-                .catch((e) => showNotification('Download Failed', `Could not download ${agent} - ${platform}`))
+            fetchGatekeeper(constructEndpoint(`/agents/${agent}`, {
+                    email: settings.account.email,
+                    token: settings.account.token,
+                    platform: platform
+                })).then((res) => {
+                        if (res.status === 200) {
+                            return res.blob()
+                        }
+                    })
+                    .then((blob) => blob.arrayBuffer())
+                    .then((data) => {
+                        let dir = getDownloadDir()
+                        let target = path.join(dir, filename)
+                        storeData(Buffer.from(data), target)
+                        fs.chmodSync(target, '755')
+                        showNotification('Downloaded File', `Downloaded ${filename} to ${dir}`)
+                    })
+                    .catch((e) => showNotification('Download Failed', `Could not download ${agent} - ${platform}`))
+        })
     }
 </script>
