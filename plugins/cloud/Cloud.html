@@ -21,6 +21,8 @@
             <p>Purpose</p>
             <select id="aws-platform"></select>
         </div>
+        <div id="aws-tools">
+        </div>
         <div id="range-configs" style="display: none">
             <div id="agents" class="label-text">
                 <p>Drop agent</p>
@@ -60,6 +62,8 @@
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
             </select>
+        </div>
+        <div id="gcp-tools" style="display: none">
         </div>
         <div class="label-text">
             <p>Project ID</p>
@@ -171,6 +175,16 @@
                 } else {
                     $('#range-configs').show();
                 }
+
+                $('#aws-tools').empty().append(
+                    ($('#aws-platform').find(':selected').attr('data-tools') || '').split(',').filter(tool => tool.length).map(tool =>
+                        $(`<div id="aws-tool-${tool}" class="label-text" data-tool="${tool}">
+                            <p>Enable ${tool}</p>
+                            <select>
+                                <option value="1" selected="true">Enabled</option>
+                                <option value="0">Disabled</option>
+                            </select>
+                        </div>`)));
             })
         });
 
@@ -181,10 +195,9 @@
             }), {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
-                $('#aws-platform').empty();
-                Object.keys(res).forEach(option => {
-                    $('#aws-platform').append(`<option value="${option}" data-tools="${res[option].tools}">${option} server</option>`)
-                })
+                $('#aws-platform').empty().append(
+                    Object.entries(res).map(([name, option]) =>
+                        $(`<option value="${name}" data-tools="${option.tools}">${name} server</option>`))).trigger('change');
             });
         }
 
@@ -303,7 +316,7 @@
                         platform: $('#aws-platform').val(),
                         callback: $('#select-redirector option:selected').val()+':'+settings.local.tcp_port,
                         instance_count: $('#instance-count').val(),
-                        tools: $('#aws-platform').find(':selected').attr('data-tools').split(','),
+                        tools: $('#aws-tools [data-tool] option[value="1"]:selected').parents('[data-tool]').toArray().map(t => $(t).attr('data-tool')),
                         config: {
                             key_name: config.aws.key_name.split('/').slice(-1)[0],
                             access_key_id: config.aws.access_key_id,
