@@ -52,6 +52,13 @@
             <p>Private key path</p>
             <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
         </div>
+        <div id="aws-tools" class="profile-heading-container" style="display: none; background: #111; border: 1px solid #222; border-radius: 4px; margin: 10px 0;">
+            <div class="body" style="margin-bottom: 10px;">
+                <strong class="profile-heading">Tools</strong>
+                    <p>Select the tools you would like installed on your new machine. Tools are the software you would like provisioned immediately after the host is ready.</p>
+            </div>
+            <div id="aws-tools-listing"></div>
+        </div>
         <button id="aws-deploy">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
@@ -60,6 +67,8 @@
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
             </select>
+        </div>
+        <div id="gcp-tools" style="display: none">
         </div>
         <div class="label-text">
             <p>Project ID</p>
@@ -171,6 +180,17 @@
                 } else {
                     $('#range-configs').show();
                 }
+
+                const tools = ($('#aws-platform').find(':selected').attr('data-tools') || '').split(',').filter(tool => tool.length).map(tool =>
+                    $(`<div id="aws-tool-${tool}" class="label-text" data-tool="${tool}">
+                        <p>Enable ${tool}</p>
+                        <span style="display: none; color: #666; font-size: 14px; font-weight: 100; margin: 0 0 5px;"></span>
+                        <select>
+                            <option value="1" selected="true">Enabled</option>
+                            <option value="0">Disabled</option>
+                        </select>
+                    </div>`));
+                $('#aws-tools').find('#aws-tools-listing').empty().append(tools).parent().toggle(tools.length > 0);
             })
         });
 
@@ -181,10 +201,9 @@
             }), {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
-                $('#aws-platform').empty();
-                Object.keys(res).forEach(option => {
-                    $('#aws-platform').append(`<option value="${option}" data-tools="${res[option].tools}">${option} server</option>`)
-                })
+                $('#aws-platform').empty().append(
+                    Object.entries(res).map(([name, option]) =>
+                        $(`<option value="${name}" data-tools="${option.tools}">${name} server</option>`))).trigger('change');
             });
         }
 
@@ -303,7 +322,7 @@
                         platform: $('#aws-platform').val(),
                         callback: $('#select-redirector option:selected').val()+':'+settings.local.tcp_port,
                         instance_count: $('#instance-count').val(),
-                        tools: $('#aws-platform').find(':selected').attr('data-tools').split(','),
+                        tools: $('#aws-tools [data-tool] option[value="1"]:selected').parents('[data-tool]').toArray().map(t => $(t).attr('data-tool')),
                         config: {
                             key_name: config.aws.key_name.split('/').slice(-1)[0],
                             access_key_id: config.aws.access_key_id,
