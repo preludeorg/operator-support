@@ -21,8 +21,6 @@
             <p>Purpose</p>
             <select id="aws-platform"></select>
         </div>
-        <div id="aws-tools">
-        </div>
         <div id="range-configs" style="display: none">
             <div id="agents" class="label-text">
                 <p>Drop agent</p>
@@ -54,6 +52,7 @@
             <p>Private key path</p>
             <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
         </div>
+        <div id="aws-tools" style="display: none; background: #111; border: 1px solid #222; border-radius: 4px; margin: 10px 0; padding: 10px;"></div>
         <button id="aws-deploy">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
@@ -62,6 +61,8 @@
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
             </select>
+        </div>
+        <div id="gcp-tools" style="display: none">
         </div>
         <div class="label-text">
             <p>Project ID</p>
@@ -174,15 +175,15 @@
                     $('#range-configs').show();
                 }
 
-                $('#aws-tools').empty().append(
-                    ($('#aws-platform').find(':selected').attr('data-tools') || '').split(',').filter(tool => tool.length).map(tool =>
-                        $(`<div id="aws-tool-${tool}" class="label-text" data-tool="${tool}">
-                            <p>Enable ${tool}</p>
-                            <select>
-                                <option value="1" selected="true">Enabled</option>
-                                <option value="0">Disabled</option>
-                            </select>
-                        </div>`)));
+                const tools = ($('#aws-platform').find(':selected').attr('data-tools') || '').split(',').filter(tool => tool.length).map(tool =>
+                    $(`<div id="aws-tool-${tool}" class="label-text" data-tool="${tool}">
+                        <p>Enable ${tool}</p>
+                        <select>
+                            <option value="1" selected="true">Enabled</option>
+                            <option value="0">Disabled</option>
+                        </select>
+                    </div>`));
+                $('#aws-tools').empty().append(tools).toggle(tools.length > 0);
             })
         });
 
