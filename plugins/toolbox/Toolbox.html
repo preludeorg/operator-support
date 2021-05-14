@@ -51,18 +51,14 @@
     <div class="loader"></div>
 </div>
 
-<div id="init-plugin">
-    <script>
-        fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
-            createStorage([path.join(settings.local.workspace, "plugins", "Toolbox", "tools")])
-        });
-    </script>
-</div>
+<div id="init-plugin"></div>
 
 <script>
     fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
         const TOOLBOX = path.join(settings.local.workspace, "plugins", "Toolbox", "tools");
-
+        
+        createStorage([TOOLBOX])
+        
         $(document).ready(function () {
             $('#toolbox-location').text(TOOLBOX);
             displayTools();
