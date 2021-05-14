@@ -132,10 +132,12 @@
                             }
                         }).then(() => {
                             EVENTS.emit('redirector:destroyed', {
+                                host: host,
                                 error: null
                             });
                         }).catch((err) => {
                             EVENTS.emit('redirector:destroyed', {
+                                host: host,
                                 error: err
                             });
                         });
