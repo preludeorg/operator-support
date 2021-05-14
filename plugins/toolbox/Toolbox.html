@@ -51,130 +51,130 @@
     <div class="loader"></div>
 </div>
 
-<div id="init-plugin">
-    <script>
-        createStorage([path.join(SETTINGS.local.workspace, "plugins", "Toolbox", "tools")])
-    </script>
-</div>
+<div id="init-plugin"></div>
 
 <script>
-    const TOOLBOX = path.join(SETTINGS.local.workspace, "plugins", "Toolbox", "tools");
-
-    $(document).ready(function () {
-        $('#toolbox-location').text(TOOLBOX);
-        displayTools();
-    });
-
-    function displayTools(){
-        fetchOperator('/plugin/toolbox', {
-            method: 'GET'
-        }).then(res => res.json()).then(res => {
-            $('#newTool').val('');
-            $('#tools').empty();
-            if(res.tools){
-                Object.keys(res.tools).forEach(tool => {
-                    updateTool(tool)
-                    let template = $('#tool-template').clone()
-                    template.attr('id', `tool-${tool}`)
-                    template.find('#tool-name .main').text(tool)
-                    template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
-                    template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
-                    template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
-                    template.find('#tool-tag').text(res.tools[tool].tag)
-                    lastUpdated(tool);
-                    template.show()
-                    $('#tools').append(template)
-                })
-            }
-        })
-    }
-
-    function ingestTool(url, tag='unknown'){
-        if(url){
-            exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
-                if (error) {
-                    showNotification('Failed to download!', stderr);
-                    return;
-                }
-                const name = url.split('/').pop().split('.')[0];
-                fetchOperator('/plugin/toolbox', {
-                    method: 'GET'
-                }).then(res => res.json()).then(res => {
-                    let tool = {};
-                    tool[name] = {'url':url, 'tag':tag};
-                    res['tools'] = Object.assign({}, res.tools, tool);
-                    fetchOperator('/plugin/toolbox', {
-                        method: 'POST',
-                        body: JSON.stringify(res)
-                    })
-                }).then(displayTools);
-                showNotification('Successful download', `${name} is now ready to use`);
-            });
-        }
-    }
-
-    function removeTool(name){
-        fetchOperator('/plugin/toolbox', {
-            method: 'GET'
-        }).then(res => res.json()).then(res => {
-            delete res.tools[name]
-            deleteDir(path.join(TOOLBOX, name))
-            fetchOperator('/plugin/toolbox', {
-                method: 'POST',
-                body: JSON.stringify(res)
-            })
-        }).then(displayTools);
-    }
-
-    function updateTool(name){
-        exec('git pull', {
-            stdio: [0, 1, 2],
-            cwd: path.join(TOOLBOX, name)
-        })
-    }
-
-    function viewTool(name){
-        const readme = loadData(path.join(TOOLBOX, name, "README.md"))
-        let converter = new showdown.Converter(),
-            text = readme, html = converter.makeHtml(text);
-        launchSidebar($('#right-sidebar-readme'), (sidebar) => {
-            sidebar.find('.loader').addClass('loading');
-            sidebar.find('#readme').html(html);
-            setTimeout(() => {
-                sidebar.find('.loader').removeClass('loading');
-            }, 250);
+    fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+        const TOOLBOX = path.join(settings.local.workspace, "plugins", "Toolbox", "tools");
+        
+        createStorage([TOOLBOX])
+        
+        $(document).ready(function () {
+            $('#toolbox-location').text(TOOLBOX);
+            displayTools();
         });
-    }
 
-    function commitHistory(name){
-        exec(`git log -n25 --pretty='format:%cd %s' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+        function displayTools(){
+            fetchOperator('/plugin/toolbox', {
+                method: 'GET'
+            }).then(res => res.json()).then(res => {
+                $('#newTool').val('');
+                $('#tools').empty();
+                if(res.tools){
+                    Object.keys(res.tools).forEach(tool => {
+                        updateTool(tool)
+                        let template = $('#tool-template').clone()
+                        template.attr('id', `tool-${tool}`)
+                        template.find('#tool-name .main').text(tool)
+                        template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
+                        template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
+                        template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+                        template.find('#tool-tag').text(res.tools[tool].tag)
+                        lastUpdated(tool);
+                        template.show()
+                        $('#tools').append(template)
+                    })
+                }
+            })
+        }
+
+        function ingestTool(url, tag='unknown'){
+            if(url){
+                exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
+                    if (error) {
+                        showNotification('Failed to download!', stderr);
+                        return;
+                    }
+                    const name = url.split('/').pop().split('.')[0];
+                    fetchOperator('/plugin/toolbox', {
+                        method: 'GET'
+                    }).then(res => res.json()).then(res => {
+                        let tool = {};
+                        tool[name] = {'url':url, 'tag':tag};
+                        res['tools'] = Object.assign({}, res.tools, tool);
+                        fetchOperator('/plugin/toolbox', {
+                            method: 'POST',
+                            body: JSON.stringify(res)
+                        })
+                    }).then(displayTools);
+                    showNotification('Successful download', `${name} is now ready to use`);
+                });
+            }
+        }
+
+        function removeTool(name){
+            fetchOperator('/plugin/toolbox', {
+                method: 'GET'
+            }).then(res => res.json()).then(res => {
+                delete res.tools[name]
+                deleteDir(path.join(TOOLBOX, name))
+                fetchOperator('/plugin/toolbox', {
+                    method: 'POST',
+                    body: JSON.stringify(res)
+                })
+            }).then(displayTools);
+        }
+
+        function updateTool(name){
+            exec('git pull', {
+                stdio: [0, 1, 2],
+                cwd: path.join(TOOLBOX, name)
+            })
+        }
+
+        function viewTool(name){
+            const readme = loadData(path.join(TOOLBOX, name, "README.md"))
+            let converter = new showdown.Converter(),
+                text = readme, html = converter.makeHtml(text);
             launchSidebar($('#right-sidebar-readme'), (sidebar) => {
                 sidebar.find('.loader').addClass('loading');
-                sidebar.find('#readme').html(`<pre>${stdout}</pre>`);
+                sidebar.find('#readme').html(html);
                 setTimeout(() => {
                     sidebar.find('.loader').removeClass('loading');
                 }, 250);
             });
-        })
-    }
+        }
 
-    function lastUpdated(name){
-        exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
-            $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
-        })
-    }
+        function commitHistory(name){
+            exec(`git log -n25 --pretty='format:%cd %s' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+                launchSidebar($('#right-sidebar-readme'), (sidebar) => {
+                    sidebar.find('.loader').addClass('loading');
+                    sidebar.find('#readme').html(`<pre>${stdout}</pre>`);
+                    setTimeout(() => {
+                        sidebar.find('.loader').removeClass('loading');
+                    }, 250);
+                });
+            })
+        }
 
-    function installStarterKit(){
-        const kit = [
-            {'tag':'agent', 'url':'https://github.com/preludeorg/pneuma'},
-            {'tag':'ttp', 'url':'https://github.com/mitre/stockpile'},
-            {'tag':'ttp', 'url':'https://github.com/redcanaryco/atomic-red-team.git'},
-            {'tag':'exploit', 'url':'https://github.com/sqlmapproject/sqlmap.git'},
-            {'tag':'recon', 'url':'https://github.com/nmap/nmap.git'},
-            {'tag':'recon', 'url':'https://github.com/sullo/nikto.git'},
-            {'tag':'recon', 'url':'https://github.com/trufflesecurity/truffleHog.git'},
-            {'tag':'phishing', 'url':'https://github.com/curtbraz/PhishAPI.git'}
-        ]
-        kit.forEach(repo => { ingestTool(repo.url, repo.tag); })
-    }
+        function lastUpdated(name){
+            exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+                $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
+            })
+        }
+
+        function installStarterKit(){
+            const kit = [
+                {'tag':'agent', 'url':'https://github.com/preludeorg/pneuma'},
+                {'tag':'ttp', 'url':'https://github.com/mitre/stockpile'},
+                {'tag':'ttp', 'url':'https://github.com/redcanaryco/atomic-red-team.git'},
+                {'tag':'exploit', 'url':'https://github.com/sqlmapproject/sqlmap.git'},
+                {'tag':'recon', 'url':'https://github.com/nmap/nmap.git'},
+                {'tag':'recon', 'url':'https://github.com/sullo/nikto.git'},
+                {'tag':'recon', 'url':'https://github.com/trufflesecurity/truffleHog.git'},
+                {'tag':'phishing', 'url':'https://github.com/curtbraz/PhishAPI.git'}
+            ]
+            kit.forEach(repo => { ingestTool(repo.url, repo.tag); })
+        }
+    });
 </script>
