@@ -52,7 +52,13 @@
             <p>Private key path</p>
             <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
         </div>
-        <div id="aws-tools" style="display: none; background: #111; border: 1px solid #222; border-radius: 4px; margin: 10px 0; padding: 10px;"></div>
+        <div id="aws-tools" class="profile-heading-container" style="display: none; background: #111; border: 1px solid #222; border-radius: 4px; margin: 10px 0;">
+            <div class="body" style="margin-bottom: 10px;">
+                <strong class="profile-heading">Tools</strong>
+                    <p>Select the tools you would like installed on your new machine. Tools are the software you would like provisioned immediately after the host is ready.</p>
+            </div>
+            <div id="aws-tools-listing"></div>
+        </div>
         <button id="aws-deploy">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
@@ -178,12 +184,13 @@
                 const tools = ($('#aws-platform').find(':selected').attr('data-tools') || '').split(',').filter(tool => tool.length).map(tool =>
                     $(`<div id="aws-tool-${tool}" class="label-text" data-tool="${tool}">
                         <p>Enable ${tool}</p>
+                        <span style="display: none; color: #666; font-size: 14px; font-weight: 100; margin: 0 0 5px;"></span>
                         <select>
                             <option value="1" selected="true">Enabled</option>
                             <option value="0">Disabled</option>
                         </select>
                     </div>`));
-                $('#aws-tools').empty().append(tools).toggle(tools.length > 0);
+                $('#aws-tools').find('#aws-tools-listing').empty().append(tools).parent().toggle(tools.length > 0);
             })
         });
 
