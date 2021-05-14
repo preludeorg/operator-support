@@ -132,18 +132,14 @@
                             }
                         }).then(() => {
                             EVENTS.emit('redirector:destroyed', {
-                                uuid: uuid,
                                 error: null
                             });
                         }).catch((err) => {
                             EVENTS.emit('redirector:destroyed', {
-                                uuid: uuid,
                                 error: err
                             });
                         });
                     });
-
-                    fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify(config.redirectors)});
                 });
             });
         });
@@ -216,15 +212,15 @@
 
         function deployAWS(){
             $("#cloud-div .loader").addClass("loading")
-            
+
             fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
                 let pollingInterval;
                 let pollingAttempts = 0;
-                function rangeSuccess(d){
+                function rangeSuccess(d, request){
                     $("#cloud-div .loader").removeClass("loading")
                     showNotification('Deployed!', d.instance + ' may take several minutes to show up')
                 }
-                function splunkSuccess(d){
+                function splunkSuccess(d, request){
                     $("#cloud-div .loader").removeClass("loading");
 
                     if (!config.hasOwnProperty('ranges')) {
@@ -267,7 +263,7 @@
                         showNotification('Range failed!', 'Splunk did not start on ' + range['splunk']['dns'] + '. Start a new range.');
                     }
                 }
-                function tunnelSuccess(d){
+                function tunnelSuccess(d, request){
                     $("#cloud-div .loader").removeClass("loading")
                     const seconds = 30;
                     let redirector = {
@@ -280,21 +276,10 @@
                     }
 
                     fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
-                        [d.instance]: redirector
-                    })});
-
-                    if(!config.hasOwnProperty('redirectors')) {
-                        config['redirectors'] = {}
-                    }
-                    config.redirectors[d.instance] = redirector;
-
-                    fetchOperator('/plugin/Cloud', {
-                        method: 'POST',
-                        body: JSON.stringify(config)
-                    }).then(res => res.json()).then(config => {
-                        showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
-                        refreshPage();
-                    });
+                            [d.instance]: redirector
+                        })});
+                    showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
+                    refreshPage();
                 }
                 function failure(d){
                     $("#cloud-div .loader").removeClass("loading")
@@ -341,7 +326,7 @@
                     fetchGatekeeper(uri, {
                         method: 'POST',
                         body: JSON.stringify(request)
-                    }).then(res => res.json()).then(success).catch(failure);
+                    }).then(res => res.json()).then(res => {success(res, request)}).catch(failure);
                 });
             });
         }
@@ -356,22 +341,11 @@
                         user: config.gcp.ssh_user,
                         key: config.gcp.ssh_key
                     }
-
                     fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
-                        [d.instance]: redirector
-                    })});
-
-                    if(!config.hasOwnProperty('redirectors')) {
-                        config['redirectors'] = {}
-                    }
-                    config.redirectors[d.instance] = redirector
-                    fetchOperator('/plugin/Cloud', {
-                        method: 'POST',
-                        body: JSON.stringify(config)
-                    }).then(res => res.json()).then(config => {
-                        showNotification('Success!', 'Your redirector is now available')
-                        refreshPage()
-                    });
+                            [d.instance]: redirector
+                        })});
+                    showNotification('Success!', 'Your redirector is now available')
+                    refreshPage()
                 }
 
                 function failure(d){
