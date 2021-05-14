@@ -50,9 +50,8 @@
                 ...template,
                 techniques: data
             }, null, 2);
-            const storedFile = path.join(SETTINGS.local.workspace, 'plugins', 'Navigator', `${adversary.name}.json`);
-            storeData(layer, storedFile);
-            showNotification('Generated layer', storedFile);
+            storeData(layer, `${adversary.name}.json`);
+            showNotification('Generated layer', process.cwd());
         };
 
         function inputFunction() {
@@ -79,7 +78,6 @@
             })
             .then(() => {
                 showNotification('Generated Adversary');
-
                 document.getElementById('file').value = '';
             });
         };

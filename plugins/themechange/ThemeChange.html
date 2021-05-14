@@ -22,38 +22,39 @@
                 $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
             }
         });
-
-        function saveBackground(){
-            fetchOperator('/plugin/ThemeChange', {
-                method: 'GET'
-            }).then(res => res.json()).then(config => {
-                config.background = $('#theme-background').val();
-                fetchOperator('/plugin/ThemeChange', {
-                    method: 'POST',
-                    body: JSON.stringify(config)
-                }).then(() => {
-                    $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
-                });
-            });
-        }
-
-        function setRandomBackground() {
-            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-            $('<style>.welcome-theme { background-color: '+randomColor+';background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
-        }
-
-        function resetBackground() {
-            $('<style>.welcome-theme { background-color:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
-            $('<style>.welcome-theme { background-image:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
-        }
-
-        function toggle_mode() {
-            let app = document.querySelector('body')
-            if (!app.classList.contains("inverted")) {
-                document.querySelector('body').classList.add('inverted')
-            } else {
-                document.querySelector('body').classList.remove('inverted')
-            }
-        }
     </script>
 </div>
+<script>
+    function saveBackground(){
+        fetchOperator('/plugin/ThemeChange', {
+            method: 'GET'
+        }).then(res => res.json()).then(config => {
+            config.background = $('#theme-background').val();
+            fetchOperator('/plugin/ThemeChange', {
+                method: 'POST',
+                body: JSON.stringify(config)
+            }).then(() => {
+                $('<style>.welcome-theme { background-image: url("'+config.background+'");background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+            });
+        });
+    }
+
+    function setRandomBackground() {
+        const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        $('<style>.welcome-theme { background-color: '+randomColor+';background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+    }
+
+    function resetBackground() {
+        $('<style>.welcome-theme { background-color:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+        $('<style>.welcome-theme { background-image:initial;background-size:cover;background-repeat:no-repeat;}</style>').appendTo('body');
+    }
+
+    function toggle_mode() {
+        let app = document.querySelector('body')
+        if (!app.classList.contains("inverted")) {
+            document.querySelector('body').classList.add('inverted')
+        } else {
+            document.querySelector('body').classList.remove('inverted')
+        }
+    }
+</script>
