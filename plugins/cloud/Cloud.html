@@ -143,7 +143,7 @@
                         });
                     });
 
-                    fetchOperator('/internal/config/redirectors', {method: 'POST', body: JSON.stringify(config.redirectors)});
+                    fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify(config.redirectors)});
                 });
             });
         });
@@ -197,7 +197,7 @@
                 $('#aws-secret-key').val(config.aws?.secret_access_key || '')
                 setGCPElems(config)
                 $("#select-redirector").empty()
-                fetchOperator('/internal/config/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
+                fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
                     Object.keys(redirectors).forEach(host => {
                         $('#select-redirector').append(`<option value="${host}">${host}</option>`)
                     })
@@ -279,7 +279,7 @@
                         redirector['password'] = request['password'];
                     }
 
-                    fetchOperator('/internal/config/redirectors', {method: 'POST', body: JSON.stringify({
+                    fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
                         [d.instance]: redirector
                     })});
 
@@ -357,7 +357,7 @@
                         key: config.gcp.ssh_key
                     }
 
-                    fetchOperator('/internal/config/redirectors', {method: 'POST', body: JSON.stringify({
+                    fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
                         [d.instance]: redirector
                     })});
 
