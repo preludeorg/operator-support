@@ -1,24 +1,17 @@
 <div class="profile-heading-container">
     <div class="body">
-        <strong class="profile-heading">Cloud resources</strong>
+        <strong class="profile-heading">Cloud provisioning</strong>
         <p>
-            Deploy either new redirector gateways, to accept beacons over the internet, or new compromised servers, to build
-            a custom test range and execute attacks on various operating systems.
+            Deploy new redirector gateways to accept beacons over the internet, compromised servers in the cloud or
+            pre-built ranges forwarding logs to an established SIEM.
         </p>
     </div>
 </div>
 
 <div id="cloud-div" class="loader-container">
-    <div class="label-text">
-        <p>Provider</p>
-        <select id="cloud-provider">
-            <option value="aws">Amazon Web Services (AWS)</option>
-            <option value="gcp">Google Cloud Platform (GCP)</option>
-        </select>
-    </div>
     <div id="aws">
         <div class="label-text">
-            <p>Purpose</p>
+            <p>I want to deploy a</p>
             <select id="aws-platform"></select>
         </div>
         <div id="range-configs" style="display: none">
@@ -40,22 +33,10 @@
                 </div>
             </div>
         </div>
-        <div class="label-text">
-            <p>AWS access key</p>
-            <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
-        </div>
-        <div class="label-text">
-            <p>AWS secret key</p>
-            <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
-        </div>
-        <div class="label-text">
-            <p>Private key path</p>
-            <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
-        </div>
-        <div id="aws-tools" class="profile-heading-container" style="display: none; background: #111; border: 1px solid #222; border-radius: 4px; margin: 10px 0;">
+        <div id="aws-tools" class="profile-heading-container" style="display: none; background: #111; border-radius: 4px; margin: 10px 0;opacity:0.9;">
             <div class="body" style="margin-bottom: 10px;">
                 <strong class="profile-heading">Tools</strong>
-                    <p>Select the tools you would like installed on your new machine. Tools are the software you would like provisioned immediately after the host is ready.</p>
+                <p>Select the tools you want installed as soon as the host becomes available.</p>
             </div>
             <div id="aws-tools-listing"></div>
         </div>
@@ -63,34 +44,73 @@
     </div>
     <div id="gcp" style="display: none;">
         <div class="label-text">
-            <p>Purpose</p>
+            <p>I want to deploy a...</p>
             <select id="gcp-platform">
                 <option value="gateway">Linux redirector</option>
             </select>
         </div>
-        <div id="gcp-tools" style="display: none">
-        </div>
-        <div class="label-text">
-            <p>Project ID</p>
-            <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
-        </div>
-        <div class="label-text">
-            <p>Service account</p>
-            <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
-        </div>
-        <div class="label-text">
-            <p>Service account key file path</p>
-            <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
-        </div>
-        <div class="label-text">
-            <p>Project-wide SSH user</p>
-            <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
-        </div>
-        <div class="label-text">
-            <p>Project-wide SSH key file path</p>
-            <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
-        </div>
+        <div id="gcp-tools" style="display: none"></div>
         <button id="gcp-deploy">Deploy</button>
+    </div>
+    <div class="loader"></div>
+</div>
+
+<div id="right-sidebar-cloud" class="right-sidebar-quarter loader-container" style="display:none;">
+    <div class="top-right">
+        <img class="close-sidebar" src="../static/assets/close-icon.svg">
+    </div>
+    <div class="label-text">
+        <br>
+        <h4>Credentials</h4>
+        <hr>
+        <br>
+        <div class="loader-container">
+            <div class="label-text">
+                <p>Provider</p>
+                <select id="cloud-provider">
+                    <option value="aws">Amazon Web Services (AWS)</option>
+                    <option value="gcp">Google Cloud Platform (GCP)</option>
+                </select>
+            </div>
+            <div id="creds-aws">
+                <div class="label-text">
+                    <p>AWS access key</p>
+                    <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
+                </div>
+                <div class="label-text">
+                    <p>AWS secret key</p>
+                    <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
+                </div>
+                <div class="label-text">
+                    <p>Private key path</p>
+                    <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
+                </div>
+            </div>
+            <div id="creds-gcp" style="display: none;">
+                <div class="label-text">
+                    <p>Project ID</p>
+                    <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
+                </div>
+                <div class="label-text">
+                    <p>Service account</p>
+                    <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
+                </div>
+                <div class="label-text">
+                    <p>Service account key file path</p>
+                    <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
+                </div>
+                <div class="label-text">
+                    <p>Project-wide SSH user</p>
+                    <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
+                </div>
+                <div class="label-text">
+                    <p>Project-wide SSH key file path</p>
+                    <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
+                </div>
+            </div>
+            <button id="set-credentials">Save</button>
+            <div class="loader"></div>
+        </div>
     </div>
     <div class="loader"></div>
 </div>
@@ -156,19 +176,40 @@
         });
     </script>
 </div>
+
 <script>
     fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
         $(document).ready(function () {
-            $("#aws-deploy").click(deployAWS);
-            $("#gcp-deploy").click(deployGCP);
-
             buildOptions();
             refreshPage();
 
             $('#cloud-provider').on('change', (ev) => {
                 Array.from(ev.target).forEach(opt => $('#' + opt.value).hide())
-                $('#' + ev.target.value).show()
-            })
+                Array.from(ev.target).forEach(opt => $('#creds-' + opt.value).hide())
+                $('#' + ev.target.value).show();
+                $('#creds-' + ev.target.value).show();
+            });
+
+            $('#set-credentials').click((ev) => {
+                fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                    config['aws'] = {
+                        key_name: $('#aws-key').val(),
+                        access_key_id: $('#aws-access-key').val(),
+                        secret_access_key: $('#aws-secret-key').val()
+                    }
+                    config['gcp'] = {
+                        user_id: $('#user_id').val(),
+                        project: $('#project').val(),
+                        ssh_user: $('#ssh_user').val(),
+                        ssh_key: $('#ssh_key').val(),
+                        rsa_key: $('#rsa_key').val()
+                    }
+                    fetchOperator('/plugin/Cloud', {
+                        method: 'POST',
+                        body: JSON.stringify(config)
+                    }).then(alert('Credentials saved!'))
+                });
+            });
 
             $('#aws-platform').on('change', function (ev) {
                 if (ev.target.value === 'gateway') {
@@ -177,6 +218,8 @@
                 } else if (ev.target.value === 'splunk') {
                     $('#range-configs').show();
                     $('#splunk-configs').show();
+                } else if (ev.target.value === 'elastic') {
+                    $('#plugin-internal .plugin-canvas').css('background-image', "url('https://miro.medium.com/max/4096/1*32i4mmM7hOjwTH1WfSYsXw.jpeg')");
                 } else {
                     $('#range-configs').show();
                 }
@@ -192,129 +235,83 @@
                     </div>`));
                 $('#aws-tools').find('#aws-tools-listing').empty().append(tools).parent().toggle(tools.length > 0);
             })
-        });
 
-        function buildOptions(){
-            fetchGatekeeper(constructEndpoint('/range', {
-                email: settings.account.email,
-                token: settings.account.token
-            }), {
-                method: 'GET'
-            }).then(res => res.json()).then(res => {
-                $('#aws-platform').empty().append(
-                    Object.entries(res).map(([name, option]) =>
-                        $(`<option value="${name}" data-tools="${option.tools}">${name} server</option>`))).trigger('change');
-            });
-        }
+            $('#aws-deploy').click((ev) => {
+                $("#cloud-div .loader").addClass("loading")
 
-        function refreshPage(){
-            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                $('#aws-key').val(config.aws?.key_name || '')
-                $('#aws-access-key').val(config.aws?.access_key_id || '')
-                $('#aws-secret-key').val(config.aws?.secret_access_key || '')
-                setGCPElems(config)
-                $("#select-redirector").empty()
-                fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
-                    Object.keys(redirectors).forEach(host => {
-                        $('#select-redirector').append(`<option value="${host}">${host}</option>`)
-                    })
-                });
-            });
-        }
-
-        function setGCPElems(config) {
-            const gcp = $('#gcp')
-            gcp.find('#user_id').val(config.gcp?.user_id || '')
-            gcp.find('#project').val(config.gcp?.project || '')
-            gcp.find('#rsa_key').val(config.gcp?.rsa_key || '')
-            gcp.find('#ssh_user').val(config.gcp?.ssh_user || '')
-            gcp.find('#ssh_key').val(config.gcp?.ssh_key || '')
-        }
-
-        function deployAWS(){
-            $("#cloud-div .loader").addClass("loading")
-
-            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                let pollingInterval;
-                let pollingAttempts = 0;
-                function rangeSuccess(d, request){
-                    $("#cloud-div .loader").removeClass("loading")
-                    showNotification('Deployed!', d.instance + ' may take several minutes to show up')
-                }
-                function splunkSuccess(d, request){
-                    $("#cloud-div .loader").removeClass("loading");
-
-                    if (!config.hasOwnProperty('ranges')) {
-                        config['ranges'] = {}
+                fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                    let pollingInterval;
+                    let pollingAttempts = 0;
+                    function rangeSuccess(d, request){
+                        $("#cloud-div .loader").removeClass("loading")
+                        showNotification('Deployed!', d.instance + ' may take several minutes to show up')
                     }
-                    config.ranges[d.splunk.dns] = {
-                        'splunk': {'dns': d.splunk.dns, 'port': 8000, 'id': d.splunk.id, 'username': 'admin', 'password': `SPLUNK-${d.splunk.id}`},
-                        'hosts': d.hosts
+                    function splunkSuccess(d, request){
+                        $("#cloud-div .loader").removeClass("loading");
+
+                        if (!config.hasOwnProperty('ranges')) {
+                            config['ranges'] = {}
+                        }
+                        config.ranges[d.splunk.dns] = {
+                            'splunk': {'dns': d.splunk.dns, 'port': 8000, 'id': d.splunk.id, 'username': 'admin', 'password': `SPLUNK-${d.splunk.id}`},
+                            'hosts': d.hosts
+                        }
+                        fetchOperator('/plugin/Cloud', {
+                            method: 'POST',
+                            body: JSON.stringify(config)
+                        }).then(res => res.json()).then(config => {
+                            showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.splunk.dns);
+                            electron.ipcRenderer.invoke('show-message-box', {
+                                type: 'info',
+                                buttons: ['OK'],
+                                defaultId: 0,
+                                title: 'Splunk Range Provisioned',
+                                message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
+                                detail: `http://${config.ranges[d.splunk.dns]['splunk']['dns']}:${config.ranges[d.splunk.dns]['splunk']['port']}\nUsername: ${config.ranges[d.splunk.dns]['splunk']['username']}\nPassword: ${config.ranges[d.splunk.dns]['splunk']['password']}`
+                            })
+                            pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.splunk.dns]);
+                        });
                     }
-                    fetchOperator('/plugin/Cloud', {
-                        method: 'POST',
-                        body: JSON.stringify(config)
-                    }).then(res => res.json()).then(config => {
-                        showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.splunk.dns);
-                        electron.ipcRenderer.invoke('show-message-box', {
-                            type: 'info',
-                            buttons: ['OK'],
-                            defaultId: 0,
-                            title: 'Splunk Range Provisioned',
-                            message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
-                            detail: `http://${config.ranges[d.splunk.dns]['splunk']['dns']}:${config.ranges[d.splunk.dns]['splunk']['port']}\nUsername: ${config.ranges[d.splunk.dns]['splunk']['username']}\nPassword: ${config.ranges[d.splunk.dns]['splunk']['password']}`
-                        })
-                        pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.splunk.dns]);
-                    });
-                }
-                function splunkRangeActive(range) {
-                    fetch(`http://${range['splunk']['dns']}:${range['splunk']['port']}`)
-                        .then(res => {
-                            if (res.status === 200) {
-                                clearInterval(pollingInterval);
-                                showNotification('Splunk active!', 'Splunk is now live on ' + range['splunk']['dns']);
-                            } else {
-                                pollingAttempts++;
-                            }
-                        }).catch(e => {
-                        pollingAttempts++
-                    });
-                    if (pollingAttempts === 10) {
-                        clearInterval(pollingInterval);
-                        showNotification('Range failed!', 'Splunk did not start on ' + range['splunk']['dns'] + '. Start a new range.');
+                    function splunkRangeActive(range) {
+                        fetch(`http://${range['splunk']['dns']}:${range['splunk']['port']}`)
+                            .then(res => {
+                                if (res.status === 200) {
+                                    clearInterval(pollingInterval);
+                                    showNotification('Splunk active!', 'Splunk is now live on ' + range['splunk']['dns']);
+                                } else {
+                                    pollingAttempts++;
+                                }
+                            }).catch(e => {
+                            pollingAttempts++
+                        });
+                        if (pollingAttempts === 10) {
+                            clearInterval(pollingInterval);
+                            showNotification('Range failed!', 'Splunk did not start on ' + range['splunk']['dns'] + '. Start a new range.');
+                        }
                     }
-                }
-                function tunnelSuccess(d, request){
-                    $("#cloud-div .loader").removeClass("loading")
-                    const seconds = 30;
-                    let redirector = {
-                        user: 'ubuntu',
-                        key: config.aws.key_name,
-                        availableAt: new Date(Date.now() + (1000 * seconds))
+                    function tunnelSuccess(d, request){
+                        $("#cloud-div .loader").removeClass("loading")
+                        const seconds = 30;
+                        let redirector = {
+                            user: 'ubuntu',
+                            key: config.aws.key_name,
+                            availableAt: new Date(Date.now() + (1000 * seconds))
+                        }
+                        if (settings.account.license === 'professional') {
+                            redirector['password'] = request['password'];
+                        }
+
+                        fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
+                                [d.instance]: redirector
+                            })});
+                        showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
+                        refreshPage();
                     }
-                    if (settings.account.license === 'professional') {
-                        redirector['password'] = request['password'];
+                    function failure(d){
+                        $("#cloud-div .loader").removeClass("loading")
+                        showNotification('Failed', d.responseText)
                     }
 
-                    fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
-                            [d.instance]: redirector
-                        })});
-                    showNotification('Success!', `Redirector provisioned! It will be available in ${seconds} seconds.`);
-                    refreshPage();
-                }
-                function failure(d){
-                    $("#cloud-div .loader").removeClass("loading")
-                    showNotification('Failed', d.responseText)
-                }
-                config['aws'] = {
-                    key_name: $('#aws-key').val(),
-                    access_key_id: $('#aws-access-key').val(),
-                    secret_access_key: $('#aws-secret-key').val()
-                }
-                fetchOperator('/plugin/Cloud', {
-                    method: 'POST',
-                    body: JSON.stringify(config)
-                }).then(res => res.json()).then(config => {
                     let request = {
                         token: settings.account.token,
                         email: settings.account.email,
@@ -349,43 +346,29 @@
                         body: JSON.stringify(request)
                     }).then(res => res.json()).then(res => {success(res, request)}).catch(failure);
                 });
-            });
-        }
+            })
 
-        function deployGCP() {
-            $("#cloud-div .loader").addClass("loading")
+            $('#gcp-deploy').click((ev) => {
+                $("#cloud-div .loader").addClass("loading")
 
-            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                function tunnelSuccess(d){
-                    $("#cloud-div .loader").removeClass("loading")
-                    const redirector = {
-                        user: config.gcp.ssh_user,
-                        key: config.gcp.ssh_key
+                fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                    function tunnelSuccess(d){
+                        $("#cloud-div .loader").removeClass("loading")
+                        const redirector = {
+                            user: config.gcp.ssh_user,
+                            key: config.gcp.ssh_key
+                        }
+                        fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
+                                [d.instance]: redirector
+                            })});
+                        showNotification('Success!', 'Your redirector is now available')
+                        refreshPage()
                     }
-                    fetchOperator('/internal/global/redirectors', {method: 'POST', body: JSON.stringify({
-                            [d.instance]: redirector
-                        })});
-                    showNotification('Success!', 'Your redirector is now available')
-                    refreshPage()
-                }
+                    function failure(d){
+                        $("#cloud-div .loader").removeClass("loading")
+                        showNotification('Failed', d.responseText)
+                    }
 
-                function failure(d){
-                    $("#cloud-div .loader").removeClass("loading")
-                    showNotification('Failed', d.responseText)
-                }
-
-                const gcp = $('#gcp')
-                config['gcp'] = {
-                    user_id: gcp.find('#user_id').val(),
-                    project: gcp.find('#project').val(),
-                    ssh_user: gcp.find('#ssh_user').val(),
-                    ssh_key: gcp.find('#ssh_key').val(),
-                    rsa_key: gcp.find('#rsa_key').val()
-                }
-                fetchOperator('/plugin/Cloud', {
-                    method: 'POST',
-                    body: JSON.stringify(config)
-                }).then(res => res.json()).then(config => {
                     let request = {
                         token: settings.account.token,
                         email: settings.account.email,
@@ -401,8 +384,43 @@
                         method: 'POST',
                         body: JSON.stringify(request)
                     }).then(res => res.json()).then(tunnelSuccess).catch(failure);
+
                 });
+            })
+        });
+
+        function buildOptions(){
+            fetchGatekeeper(constructEndpoint('/range', {
+                email: settings.account.email,
+                token: settings.account.token
+            }), {
+                method: 'GET'
+            }).then(res => res.json()).then(res => {
+                $('#aws-platform').empty().append(
+                    Object.entries(res).map(([name, option]) =>
+                        $(`<option value="${name}" data-tools="${option.tools}">${name} server</option>`))).trigger('change');
             });
         }
+
+        function refreshPage(){
+            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                $('#aws-key').val(config.aws?.key_name || '')
+                $('#aws-access-key').val(config.aws?.access_key_id || '')
+                $('#aws-secret-key').val(config.aws?.secret_access_key || '')
+                $('#user_id').val(config.gcp?.user_id || '')
+                $('#project').val(config.gcp?.project || '')
+                $('#rsa_key').val(config.gcp?.rsa_key || '')
+                $('#ssh_user').val(config.gcp?.ssh_user || '')
+                $('#ssh_key').val(config.gcp?.ssh_key || '')
+
+                $("#select-redirector").empty()
+                fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
+                    Object.keys(redirectors).forEach(host => {
+                        $('#select-redirector').append(`<option value="${host}">${host}</option>`)
+                    })
+                }).then(launchSidebar($('#right-sidebar-cloud')));
+            });
+        }
+
     });
 </script>
