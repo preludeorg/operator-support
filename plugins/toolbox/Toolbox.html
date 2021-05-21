@@ -18,32 +18,35 @@
         text-transform: uppercase;
     }
 </style>
-<script type="text/javascript" src="https://raw.githubusercontent.com/preludeorg/operator-support/master/plugins/toolbox/showdown.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/preludeorg/operator-support/plugins/toolbox/showdown.min.js"></script>
 
-<div class="profile-heading-container">
-    <div class="body">
-        <strong class="profile-heading">Manage your tools</strong>
-        <p>
-            Your toolbox contains all the utilities you use on a regular basis. Operator will keep these tools updated
-            so no need to manually pull latest code. Just enter the address of any tool you want to track and Operator
-            will clone it into your toolbox and keep it updated. Unsure where to start? <a onclick="installStarterKit()">Install our starter kit</a>
-            to get bootstrapped. This plugin requires that GIT be installed on this computer.
-        </p>
+<div id="toolbox-container" class="loader-container">
+    <div class="profile-heading-container">
+        <div class="body">
+            <strong class="profile-heading">Manage your tools</strong>
+            <p>
+                Your toolbox contains all the utilities you use on a regular basis. Operator will keep these tools updated
+                so no need to manually pull latest code. Just enter the address of any tool you want to track and Operator
+                will clone it into your toolbox and keep it updated. Unsure where to start? <a id="starterKit">Install our starter kit</a>
+                to get bootstrapped. This plugin requires that GIT be installed on this computer.
+            </p>
+        </div>
     </div>
+    <h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
+    <br>
+    <input placeholder="Enter the GitHub address of a tool you want" id="newTool" />
+    <br>
+    <ul id="tools" class="horizontal-list cf"></ul>
+    <div class="loader"></div>
 </div>
-<h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
-<br>
-<input placeholder="Enter the GitHub address of a tool you want" id="newTool" onchange="ingestTool(this.value)"/>
-<br>
-<ul id="tools" class="horizontal-list" style="margin: 0 -10px; width: calc(100% + 20px);"></ul>
 
-<li id="tool-template" class="profile" style="display:none;width:45%;margin:10px">
+<li id="tool-template" class="profile" style="position: relative; display:none;margin:10px 0">
     <div class="description">
         <h3 id="tool-name" class="split"><span class="main"></span></h3>
         <p id="tool-url"></p>
     </div>
     <div id="tool-actions" class="actions"></div>
-    <p id="tool-tag" class="tool-tag"></p>
+    <p id="tool-tag" class="tool-tag" style="position: absolute; top: 20px; right: 20px;"></p>
 </li>
 
 <div id="right-sidebar-readme" class="right-sidebar-half loader-container doc-block" style="display:none">
@@ -58,6 +61,28 @@
         
         $(document).ready(function () {
             $('#toolbox-location').text(TOOLBOX);
+            $('#newTool').on('change', (ev) => {
+                $('#toolbox-container .loader').toggleClass('loading', true);
+                ingestTool(ev.target.value).then(() => {
+                    $('#toolbox-container .loader').toggleClass('loading', false);
+                });
+            });
+            $('#starterKit').on('click', (ev) => {
+                const kit = [
+                    {'tag':'agent', 'url':'https://github.com/preludeorg/pneuma'},
+                    {'tag':'ttp', 'url':'https://github.com/mitre/stockpile'},
+                    {'tag':'ttp', 'url':'https://github.com/redcanaryco/atomic-red-team.git'},
+                    {'tag':'exploit', 'url':'https://github.com/sqlmapproject/sqlmap.git'},
+                    {'tag':'recon', 'url':'https://github.com/nmap/nmap.git'},
+                    {'tag':'recon', 'url':'https://github.com/sullo/nikto.git'},
+                    {'tag':'recon', 'url':'https://github.com/trufflesecurity/truffleHog.git'},
+                    {'tag':'phishing', 'url':'https://github.com/curtbraz/PhishAPI.git'}
+                ]
+                $('#toolbox-container .loader').toggleClass('loading', true);
+                Promise.all(kit.map(repo => ingestTool(repo.url, repo.tag))).then(() => {
+                    $('#toolbox-container .loader').toggleClass('loading', false);
+                });
+            });
             displayTools();
         });
 
@@ -86,27 +111,32 @@
         }
 
         function ingestTool(url, tag='unknown'){
-            if(url){
-                exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
-                    if (error) {
-                        showNotification('Failed to download!', stderr);
-                        return;
-                    }
-                    const name = url.split('/').pop().split('.')[0];
-                    fetchOperator('/plugin/toolbox', {
-                        method: 'GET'
-                    }).then(res => res.json()).then(res => {
-                        let tool = {};
-                        tool[name] = {'url':url, 'tag':tag};
-                        res['tools'] = Object.assign({}, res.tools, tool);
+            return new Promise((resolve, reject) => {
+                if(url){
+                    exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
+                        if (error) {
+                            showNotification('Failed to download!', stderr);
+                            resolve();
+                            return;
+                        }
+                        const name = url.split('/').pop().split('.')[0];
                         fetchOperator('/plugin/toolbox', {
-                            method: 'POST',
-                            body: JSON.stringify(res)
-                        })
-                    }).then(displayTools);
-                    showNotification('Successful download', `${name} is now ready to use`);
-                });
-            }
+                            method: 'GET'
+                        }).then(res => res.json()).then(res => {
+                            let tool = {};
+                            tool[name] = {'url':url, 'tag':tag};
+                            res['tools'] = Object.assign({}, res.tools, tool);
+                            return fetchOperator('/plugin/toolbox', {
+                                method: 'POST',
+                                body: JSON.stringify(res)
+                            })
+                        }).then(displayTools).then(resolve);
+                        showNotification('Successful download', `${name} is now ready to use`);
+                    });
+                } else {
+                    resolve();
+                }
+            });
         }
 
         function removeTool(name){
@@ -158,20 +188,6 @@
             exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
                 $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
             })
-        }
-
-        function installStarterKit(){
-            const kit = [
-                {'tag':'agent', 'url':'https://github.com/preludeorg/pneuma'},
-                {'tag':'ttp', 'url':'https://github.com/mitre/stockpile'},
-                {'tag':'ttp', 'url':'https://github.com/redcanaryco/atomic-red-team.git'},
-                {'tag':'exploit', 'url':'https://github.com/sqlmapproject/sqlmap.git'},
-                {'tag':'recon', 'url':'https://github.com/nmap/nmap.git'},
-                {'tag':'recon', 'url':'https://github.com/sullo/nikto.git'},
-                {'tag':'recon', 'url':'https://github.com/trufflesecurity/truffleHog.git'},
-                {'tag':'phishing', 'url':'https://github.com/curtbraz/PhishAPI.git'}
-            ]
-            kit.forEach(repo => { ingestTool(repo.url, repo.tag); })
         }
     });
 </script>
