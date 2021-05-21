@@ -1,0 +1,514 @@
+<div id="plugin-header" class="profile-heading-container">
+    <div class="body">
+        <strong class="profile-heading">Initial access on Azure resources</strong>
+        <p>
+            Use Operator to get initial access on your Azure deployed resources. This will allow you deploy Pneuma (or PneumaEX for professional license holders) onto
+            virtual machines running in Resource Groups on Microsoft Azure.
+        </p>
+    </div>
+</div>
+
+<div id="AzureInitialAccess-div" class="loader-container">
+    <div id="provide-credentials" class="AzureInitialAccess-card">
+        <div class="profile-heading-container">
+            <div class="body">
+                <strong class="profile-heading">Step 1: Supply Credentials</strong>
+                <p>
+                    Provide subscription information and a pre-configured Service Principal so we can connect to your environment. To create one, you can find additional information in Microsoft Documentation
+                    (<a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">Create a Service Principal with a Password</a>) or use the following Azure CLI commands:
+                    <code>az ad sp create-for-rbac
+az account show --query id -o tsv</code>
+                </p>
+            </div>
+        </div>
+        <div class="label-text">
+            <p>Tenant ID</p>
+            <div class="input-wrapper"><input id="tenant-id" type="password" spellcheck="false" class="azure-creds"/></div>
+        </div>
+        <div class="label-text">
+            <p>Subscription ID</p>
+            <div class="input-wrapper"><input id="subscription-id" type="password" spellcheck="false" class="azure-creds"/></div>
+        </div>
+        <div class="label-text">
+            <p>Application ID (Key)</p>
+            <div class="input-wrapper"><input id="app-id" type="password" spellcheck="false" class="azure-creds"/></div>
+        </div>
+        <div class="label-text">
+            <p>Application Password</p>
+            <div class="input-wrapper"><input id="app-password" type="password" spellcheck="false" class="azure-creds"/></div>
+        </div>
+        <div id="azure-error" style="display: none;"><p></p></div>
+        <button id="azure-save" onclick="saveCredentials()" disabled>Save and validate</button>
+    </div>
+
+    <div id="configure-targets" class="AzureInitialAccess-card" style="display: none;">
+        <div class="profile-heading-container">
+            <div class="body">
+                <strong class="profile-heading">Step 2: Configure Targets</strong>
+                <p>
+                    Configure your targeting options for dropping agents. You can either deploy agents on one or multiple targets within in a Resource Group.
+                </p>
+            </div>
+        </div>
+        <div class="label-text">
+            <p>Resource Groups</p>
+            <select id="resource-groups">
+                <option disabled selected>Select a resource group</option>
+            </select>
+        </div>
+        <div class="label-text">
+            <p>Available Virtual Machines</p>
+            <select id="virtual-machines" multiple>
+            </select>
+        </div>
+
+        <button id="target-save" onclick="saveTargets()" disabled>Save and continue</button>
+    </div>
+
+    <div id="configure-agents" class="AzureInitialAccess-card" style="display: none;">
+        <div class="profile-heading-container">
+            <div class="body">
+                <strong class="profile-heading">Step 3: Configure Agents</strong>
+                <p>
+                    Configure your agent deployment information. Depending upon your license, you will be able to use different agents.
+                </p>
+            </div>
+        </div>
+        <div class="label-text">
+            <p>Select an agent to deploy</p>
+            <select id="select-agent">
+                <option disabled selected>Select an agent</option>
+            </select>
+        </div>
+        <div class="label-text">
+            <p>Select a protocol</p>
+            <select id="select-protocol">
+                <option disabled selected>Select a protocol</option>
+            </select>
+        </div>
+        <div id="redirectors" class="label-text">
+            <p>Select a callback</p>
+            <select id="select-redirector">
+                <option disabled selected>Select a callback</option>
+                <option value="manual">Manual</option>
+            </select>
+        </div>
+        <div id="manual-callback-wrapper" class="label-text" style="display: none;">
+            <p>Manual callback target</p>
+            <div class="input-wrapper"><input id="manual-callback" type="text" spellcheck="false"/></div>
+        </div>
+
+        <button id="agent-save" onclick="saveAgent()" disabled>Save and continue</button>
+    </div>
+
+    <div id="review-config" class="AzureInitialAccess-card" style="display: none;">
+        <div class="profile-heading-container">
+            <div class="body">
+                <strong class="profile-heading">Step 4: Review and launch</strong>
+                <p>
+                    Review your configuration below and launch the initial access commands when ready!
+                </p>
+            </div>
+        </div>
+        <div class="body">
+            <br/>
+        </div>
+        <div class="label-text">
+            <p>Launch configuration</p>
+            <div id="launch-config" style="border-radius: 4px; overflow: hidden;"></div>
+        </div>
+        <button id="agent-launch" onclick="launchAgents()" disabled>Launch</button>
+    </div>
+    <div class="loader"></div>
+</div>
+
+<div id="AzureInitialAccess-nav" class="course-flag-container" style="display: block;">
+    <div style="margin: 0 auto; text-align: center; display: inline-block;">
+        <a id="courseFlagPrev" class="course-flag-pagination" style="display:none;"></a>
+        <ul id="courseFlags" class="horizontal-list" style="margin:0px;"></ul>
+        <a id="courseFlagNext" class="course-flag-pagination" style="display:none;"></a>
+    </div>
+</div>
+
+<li id="challenge-template" style="display:none"></li>
+
+<div id="init-plugin">
+    <script>
+    </script>
+</div>
+<script>
+    $(document).ready(function () {
+        refreshPage();
+    });
+
+    function checkValidInputs(event) {
+        const inputs = [...document.querySelectorAll('.azure-creds')].reduce((acc, i) => {
+            if (i.value != "") acc.push(i);
+            return acc;
+        }, []);
+        (inputs.length === 4) ? document.getElementById('azure-save').disabled = false : document.getElementById('azure-save').disabled = true;
+    }
+
+    function populateNavigationBar() {
+        $(".course-flag-container").show();
+        let flags = $('#courseFlags');
+        flags.empty();
+        document.querySelectorAll('.AzureInitialAccess-card').forEach((e, i) => {
+            const entry = $('#challenge-template').clone();
+            entry.prop('id', 'tab-' + e.id);
+            entry.text(e.id);
+            entry.click(function () {
+                showCard(e.id);
+            });
+            if (e.style.display !== 'none') {
+                entry.addClass('active');
+            } else {
+                entry.removeClass('active');
+            }
+            entry.addClass('progress');
+            entry.show();
+            flags.append(entry);
+        });
+    }
+
+    function refreshPage(){
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            setAzureElems(config);
+            const createScript = (src) => {
+                const script = document.createElement('script')
+                script.setAttribute('type', 'text/javascript')
+                script.setAttribute('src', src)
+                return script
+            }
+
+            const cm = createScript("https://cdn.jsdelivr.net/npm/codemirror@5.58.3/lib/codemirror.min.js")
+            cm.addEventListener('load', () => {
+                const js = createScript("https://cdn.jsdelivr.net/npm/codemirror@5.58.3/mode/javascript/javascript.min.js")
+                document.body.appendChild(js)
+            })
+            document.body.appendChild(cm)
+
+            document.querySelectorAll('.azure-creds').forEach((e) => {
+                e.addEventListener('input', checkValidInputs);
+            });
+            checkValidInputs();
+            populateNavigationBar();
+        });
+    }
+
+    function setAzureElems(config) {
+        const creds = $('#provide-credentials');
+        creds.find('#tenant-id').val(config.azure?.tenant_id || '');
+        creds.find('#subscription-id').val(config.azure?.subscription_id || '');
+        creds.find('#app-id').val(config.azure?.app_id || '');
+        creds.find('#app-password').val(config.azure?.app_password || '');
+    }
+
+    function saveCredentials() {
+        $("#AzureInitialAccess-div .loader").addClass("loading");
+        const creds = $('#provide-credentials');
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['azure'] = {
+                tenant_id: creds.find('#tenant-id').val(),
+                subscription_id: creds.find('#subscription-id').val(),
+                app_id: creds.find('#app-id').val(),
+                app_password: creds.find('#app-password').val()
+            };
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)});
+            testCredentials(config);
+        });
+    }
+
+    function testCredentials(config) {
+        $('#azure-error').hide();
+        fetchAzure('/resourceGroups', 'GET', '2020-10-01', config)
+            .then(res => res.json())
+            .then(res => {
+                if (res.hasOwnProperty('value')) {
+                    let rgElem = $('#resource-groups');
+                    res?.value.forEach(rg => {
+                        rgElem.append(new Option(rg.name, rg.name));
+                    });
+                    rgElem.on('change', handleListVmsInResourceGroup);
+                    showCard('configure-targets');
+                    $("#AzureInitialAccess-div .loader").removeClass("loading");
+                } else {
+                    $('#azure-error p').text(res.error.message);
+                    $('#azure-error').show();
+                    $("#AzureInitialAccess-div .loader").removeClass("loading");
+                }
+            }).catch(res => {
+            $('#azure-error p').text(res);
+            $('#azure-error').show();
+            $("#AzureInitialAccess-div .loader").removeClass("loading");
+        });
+    }
+
+    function launchAgents() {
+        $("#AzureInitialAccess-div .loader").addClass("loading");
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['azure'] = {
+                tenant_id: creds.find('#tenant-id').val(),
+                subscription_id: creds.find('#subscription-id').val(),
+                app_id: creds.find('#app-id').val(),
+                app_password: creds.find('#app-password').val()
+            };
+            let editor = document.querySelector('#launch-config').querySelector('.CodeMirror').CodeMirror;
+            let liveConfig = JSON.parse(editor.getValue());
+            config['agent'] = liveConfig['agent'];
+            config['targets'] = liveConfig['targets'];
+            Object.entries(config.targets.virtual_machines).forEach(([k, v]) => {
+                let command = {
+                    commandId: (k === 'windows') ? "RunPowerShellScript" : "RunShellScript",
+                    script: config.agent.initial_access[k]
+                };
+                fetchAzure(`/resourceGroups/${config.targets.resource_group}/providers/Microsoft.Compute/virtualMachines/${v}/runCommand`, 'POST', '2020-12-01', config, command)
+                    .then(res => {
+                        if (res.status === 202) {
+                            alert(`SUCCESS: Launched an agent on ${v}`);
+                        } else {
+                            alert(`FAILED: Unable to run an agent on ${v}`);
+                        }
+                        $("#AzureInitialAccess-div .loader").removeClass("loading");
+                    }).catch(e => {
+                    $("#AzureInitialAccess-div .loader").removeClass("loading");
+                })
+            });
+        });
+    }
+
+    function saveTargets() {
+        $("#AzureInitialAccess-div .loader").addClass("loading");
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['targets'] = {
+                resource_group: $('#resource-groups').val(),
+                virtual_machines: {}
+            };
+            [...document.querySelectorAll('#virtual-machines :checked')].forEach(opt => {
+                const os = opt.getAttribute('data-os');
+                if (!config['targets']['virtual_machines'].hasOwnProperty(os)) config['targets']['virtual_machines'][os] = [];
+                config['targets']['virtual_machines'][os].push(opt.value);
+            });
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
+                showCard('configure-agents');
+                $("#AzureInitialAccess-div .loader").removeClass("loading");
+            });
+        });
+    }
+
+    function saveAgent() {
+        $("#AzureInitialAccess-div .loader").addClass("loading");
+        let callback = $('#select-redirector').val();
+        let protocol = $('#select-protocol').val();
+        let agentSelect = document.getElementById('select-agent');
+        let agentOpt = agentSelect.options[agentSelect.selectedIndex];
+        if (callback === 'manual') callback = $('#manual-callback').val();
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            config['agent'] = {
+                agent: agentOpt.value,
+                initial_access: Object.entries(JSON.parse(window.atob(agentOpt.getAttribute('data-initial_access')))).reduce((acc, [k, v]) => {
+                    if (config?.targets.virtual_machines.hasOwnProperty(k)) return {...acc, ...{[k]: v?.script.trim().replace("#{callback}", AUTOMATIC_FACTS['operator'][protocol]({callback: callback})).replace("#{contact}", protocol).split('\n')}}
+                    return acc;
+                }, {})
+            };
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
+                showCard('review-config');
+                $("#AzureInitialAccess-div .loader").removeClass("loading");
+            });
+        });
+    }
+
+    function populateReviewCard(config) {
+        let configDiv = document.querySelector('#launch-config');
+        debugger;
+        if (config.hasOwnProperty('agent') && config.hasOwnProperty('targets') && config.hasOwnProperty('azure')) {
+            let launchConfig = {
+                agent: config['agent'],
+                targets: config['targets']
+            };
+            if (configDiv.querySelector('.CodeMirror') === null) {
+                let editor = CodeMirror(document.querySelector('#launch-config'), {
+                    theme: 'material-darker',
+                    mode: {
+                        name: 'javascript',
+                        json: true,
+                        statementIndent: 2
+                    },
+                    autoRefresh: true,
+                    lineNumbers: true,
+                    dragDrop: false,
+                    value: JSON.stringify(launchConfig, null, 4)
+                });
+                setTimeout(function() { editor.refresh(); }, 100);
+            } else {
+                let editor = configDiv.querySelector('.CodeMirror').CodeMirror;
+                editor.setValue(JSON.stringify(launchConfig, null, 4));
+                setTimeout(function() { editor.refresh(); }, 100);
+            }
+            document.getElementById('agent-launch').disabled = false;
+        } else {
+            document.getElementById('agent-launch').disabled = true;
+        }
+    }
+
+    function populateAgentCard(config) {
+        $("#AzureInitialAccess-div .loader").addClass("loading");
+        let redirectorElem = document.getElementById('select-redirector');
+        redirectorElem.selectedIndex = 0;
+        redirectorElem.options.length = 2;
+        fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
+            Object.keys(redirectors).forEach(host => {
+                redirectorElem.append(new Option(host, host));
+            });
+            redirectorElem.addEventListener('change', (ev) => {
+                (ev.target.value === 'manual') ? document.getElementById('manual-callback-wrapper').style.display = 'block' : document.getElementById('manual-callback-wrapper').style.display = 'none';
+                checkAllAgentFieldsPopulated();
+            });
+            let manualInput = document.getElementById('manual-callback');
+            manualInput.addEventListener('input', checkAllAgentFieldsPopulated);
+
+            fetchGatekeeper(constructEndpoint(`/agents`, {
+                email: SETTINGS.account.email,
+                token: SETTINGS.account.token
+            }), {
+                method: 'GET',
+                redirect: 'follow'
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    let agentSelect = document.getElementById('select-agent');
+                    agentSelect.options.length = 1;
+                    data.forEach(agent => {
+                        if (agent.hasOwnProperty('initial_access')) {
+                            let option = new Option(agent.name, agent.name);
+                            option.setAttribute('data-protocols', agent.protocols);
+                            option.setAttribute('data-initial_access', window.btoa(JSON.stringify(agent.initial_access)));
+                            agentSelect.append(option);
+                        }
+                    });
+                    agentSelect.addEventListener('change', (ev) => {
+                        let agent = agentSelect.options[agentSelect.selectedIndex];
+                        let protocolSelect = document.getElementById('select-protocol');
+                        protocolSelect.options.length = 1;
+                        agent.getAttribute('data-protocols').split(',').forEach(p => {
+                            protocolSelect.append(new Option(p, p));
+                        });
+                        protocolSelect.addEventListener('change', checkAllAgentFieldsPopulated);
+                        checkAllAgentFieldsPopulated();
+                    });
+                    checkAllAgentFieldsPopulated();
+                    $("#AzureInitialAccess-div .loader").removeClass("loading");
+                })
+                .catch(e => {
+                    console.log(e);
+                    $("#AzureInitialAccess-div .loader").removeClass("loading");
+                })
+        });
+    }
+
+    function checkAllAgentFieldsPopulated() {
+        let btn = document.getElementById('agent-save');
+        btn.disabled = true;
+        let valid = ['select-agent', 'select-protocol', 'select-redirector'].reduce((acc, e) => {
+            if (document.getElementById(e).selectedIndex !== 0) acc.push(e);
+            return acc;
+        }, []);
+        if (valid.length === 3) {
+            let manualWrapper = document.getElementById('manual-callback-wrapper');
+            if (manualWrapper.style.display === 'none' || (manualWrapper.style.display === 'block' && document.getElementById('manual-callback').value !== '')) {
+                btn.disabled = false;
+            }
+        }
+    }
+
+    function showCard(id) {
+        $('.AzureInitialAccess-card').map((i, elem) => $(`#${elem.id}`).hide());
+        $('#plugin-header').hide();
+        fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            switch (id) {
+                case 'review-config':
+                    populateReviewCard(config);
+                    break;
+                case 'configure-agents':
+                    populateAgentCard(config);
+                    break;
+                case 'provide-credentials':
+                    $('#plugin-header').show();
+                    break;
+            }
+            $(`#${id}`).show();
+            populateNavigationBar();
+        });
+    }
+
+    function handleListVmsInResourceGroup(ev) {
+        if (ev.target.value !== undefined) {
+            fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+                let vmElem = $("#virtual-machines");
+                vmElem.empty();
+                vmElem.on('change', (ev) => {
+                    (vmElem.val() !== null && vmElem.val().length > 0) ? document.getElementById('target-save').disabled = false : document.getElementById('target-save').disabled = true;
+                });
+                $("#AzureInitialAccess-div .loader").addClass("loading");
+                fetchAzure(`/resourceGroups/${ev.target.value}/providers/Microsoft.Compute/virtualMachines`, 'GET', '2020-12-01', config)
+                    .then(res => {
+                        if (res.status === 200) {
+                            return res.json();
+                        }
+                    })
+                    .then(res => {
+                        res?.value.forEach(vm => {
+                            let option = new Option(vm.name, vm.name);
+                            (vm.properties.osProfile.hasOwnProperty('windowsConfiguration')) ? option.setAttribute('data-os', 'windows') : option.setAttribute('data-os', 'linux');
+                            vmElem.append(option);
+                        });
+                        $("#AzureInitialAccess-div .loader").removeClass("loading");
+                    });
+            });
+        }
+    }
+
+    function fetchAzure(endpoint, method, api_version, config, body = null) {
+        return new Promise((resolve, reject) => {
+            azureOauthToken(config)
+                .then(res => {
+                    let params = {
+                        method: method,
+                        withCredentials: true,
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${res.bearerToken}`,
+                            'Host': 'management.azure.com'
+                        }
+                    };
+                    if (body) params['body'] = JSON.stringify(body);
+                    fetch(`https://management.azure.com/subscriptions/${config['azure']['subscription_id']}${endpoint}?api-version=${api_version}`, params)
+                        .then(resolve)
+                        .catch(reject)
+                }).catch(reject);
+        });
+    }
+
+    function azureOauthToken(config, resource = null) {
+        return new Promise(((resolve, reject) => {
+            const ms_oauth = `https://login.microsoftonline.com/${config['azure']['tenant_id']}/oauth2/token`;
+            let details = {
+                'grant_type': 'client_credentials',
+                'client_id': config['azure']['app_id'],
+                'client_secret': config['azure']['app_password'],
+                'resource': (resource !== null) ? resource : 'https://management.azure.com'
+            };
+            fetch(ms_oauth, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body: Object.keys(details).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key])).join('&')
+            })
+                .then(res => res.json())
+                .then(res => resolve({'bearerToken': res?.access_token}))
+                .catch(reject)
+        }));
+    }
+</script>
