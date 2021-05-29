@@ -26,7 +26,7 @@
                 <select id="select-redirector"></select>
             </div>
         </div>
-        <div id="splunk-configs" style="display: none">
+        <div id="siem-configs" style="display: none">
             <div id="quantity" class="label-text">
                 <p>Windows Instance Quantity</p>
                 <div class="input-wrapper"><input id="instance-count" type="number" spellCheck="false" value="1"/>
@@ -214,12 +214,10 @@
             $('#aws-platform').on('change', function (ev) {
                 if (ev.target.value === 'gateway') {
                     $('#range-configs').hide();
-                    $('#splunk-configs').hide();
+                    $('#siem-configs').hide();
                 } else if (ev.target.value === 'splunk') {
                     $('#range-configs').show();
-                    $('#splunk-configs').show();
-                } else if (ev.target.value === 'elastic') {
-                    $('#plugin-internal .plugin-canvas').css('background-image', "url('https://miro.medium.com/max/4096/1*32i4mmM7hOjwTH1WfSYsXw.jpeg')");
+                    $('#siem-configs').show();
                 } else {
                     $('#range-configs').show();
                 }
@@ -246,30 +244,32 @@
                         $("#cloud-div .loader").removeClass("loading")
                         showNotification('Deployed!', d.instance + ' may take several minutes to show up')
                     }
-                    function splunkSuccess(d, request){
+                    function siemSuccess(d, request){
                         $("#cloud-div .loader").removeClass("loading");
 
                         if (!config.hasOwnProperty('ranges')) {
                             config['ranges'] = {}
                         }
-                        config.ranges[d.splunk.dns] = {
-                            'splunk': {'dns': d.splunk.dns, 'port': 8000, 'id': d.splunk.id, 'username': 'admin', 'password': `SPLUNK-${d.splunk.id}`},
+                        config.ranges[d.siem.dns] = {
+                            'splunk': {'dns': d.siem.dns, 'port': 8000, 'id': d.siem.id, 'username': 'admin', 'password': `SPLUNK-${d.siem.id}`},
                             'hosts': d.hosts
                         }
                         fetchOperator('/plugin/Cloud', {
                             method: 'POST',
                             body: JSON.stringify(config)
                         }).then(res => res.json()).then(config => {
-                            showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.splunk.dns);
-                            electron.ipcRenderer.invoke('show-message-box', {
-                                type: 'info',
-                                buttons: ['OK'],
-                                defaultId: 0,
-                                title: 'Splunk Range Provisioned',
-                                message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
-                                detail: `http://${config.ranges[d.splunk.dns]['splunk']['dns']}:${config.ranges[d.splunk.dns]['splunk']['port']}\nUsername: ${config.ranges[d.splunk.dns]['splunk']['username']}\nPassword: ${config.ranges[d.splunk.dns]['splunk']['password']}`
-                            })
-                            pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.splunk.dns]);
+                            if (request['siem'] == 'splunk') {
+                                showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.siem.dns);
+                                electron.ipcRenderer.invoke('show-message-box', {
+                                    type: 'info',
+                                    buttons: ['OK'],
+                                    defaultId: 0,
+                                    title: 'Splunk Range Provisioned',
+                                    message: `Splunk will be available in 5-10 minutes. Access splunk using the following information:`,
+                                    detail: `http://${config.ranges[d.siem.dns]['splunk']['dns']}:${config.ranges[d.siem.dns]['splunk']['port']}\nUsername: ${config.ranges[d.siem.dns]['splunk']['username']}\nPassword: ${config.ranges[d.siem.dns]['splunk']['password']}`
+                                })
+                                pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.siem.dns]);
+                            }
                         });
                     }
                     function splunkRangeActive(range) {
@@ -334,9 +334,10 @@
                         }
                         uri = '/range/aws/gateway';
                         success = tunnelSuccess;
-                    } else if (platformTarget === 'splunk') {
-                        uri = '/range/aws/splunk';
-                        success = splunkSuccess;
+                    } else if (platformTarget === 'splunk' || platformTarget === 'elastic') {
+                        uri = '/range/aws/siem';
+                        success = siemSuccess;
+                        request['siem'] = (platformTarget === 'splunk') ? 'splunk' : 'elastic';
                     } else {
                         uri = '/range/aws';
                         success = rangeSuccess;
