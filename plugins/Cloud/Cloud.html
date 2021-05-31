@@ -33,13 +33,6 @@
                 </div>
             </div>
         </div>
-        <div id="aws-tools" class="profile-heading-container" style="display: none; background: #111; border-radius: 4px; margin: 10px 0;opacity:0.9;">
-            <div class="body" style="margin-bottom: 10px;">
-                <strong class="profile-heading">Tools</strong>
-                <p>Select the tools you want installed as soon as the host becomes available.</p>
-            </div>
-            <div id="aws-tools-listing"></div>
-        </div>
         <button id="aws-deploy">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
@@ -117,6 +110,21 @@
 
 <div id="init-plugin">
     <script>
+        function openCloudProviderConfig(ev) {
+            launchSidebar($('#right-sidebar-cloud'));
+        }
+
+        EVENTS.on('section:dock', Object.assign((dock) => {
+            if (!dock.filter(e => e.id === 'config-cloud-plugin').length && document.getElementById('cloud-div') !== null) {
+                EVENTS.emit('section:dock:rebuild', [{
+                        id: 'config-cloud-plugin',
+                        icon: '../static/assets/settings-icon.svg',
+                        handler: openCloudProviderConfig,
+                        tooltip: 'Open provider configuration modal'
+                    }].concat(dock)
+                );
+            }
+        }));
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
@@ -221,17 +229,6 @@
                 } else {
                     $('#range-configs').show();
                 }
-
-                const tools = ($('#aws-platform').find(':selected').attr('data-tools') || '').split(',').filter(tool => tool.length).map(tool =>
-                    $(`<div id="aws-tool-${tool}" class="label-text" data-tool="${tool}">
-                        <p>Enable ${tool}</p>
-                        <span style="display: none; color: #666; font-size: 14px; font-weight: 100; margin: 0 0 5px;"></span>
-                        <select>
-                            <option value="1" selected="true">Enabled</option>
-                            <option value="0">Disabled</option>
-                        </select>
-                    </div>`));
-                $('#aws-tools').find('#aws-tools-listing').empty().append(tools).parent().toggle(tools.length > 0);
             })
 
             $('#aws-deploy').click((ev) => {
@@ -258,7 +255,7 @@
                             method: 'POST',
                             body: JSON.stringify(config)
                         }).then(res => res.json()).then(config => {
-                            if (request['siem'] == 'splunk') {
+                            if (request['siem'] === 'splunk') {
                                 showNotification('Deployed!', 'Splunk will be available in 5-10 minutes on ' + d.siem.dns);
                                 electron.ipcRenderer.invoke('show-message-box', {
                                     type: 'info',
@@ -319,7 +316,6 @@
                         platform: $('#aws-platform').val(),
                         callback: $('#select-redirector option:selected').val()+':'+settings.local.tcp_port,
                         instance_count: $('#instance-count').val(),
-                        tools: $('#aws-tools [data-tool] option[value="1"]:selected').parents('[data-tool]').toArray().map(t => $(t).attr('data-tool')),
                         config: {
                             key_name: config.aws.key_name.split('/').slice(-1)[0],
                             access_key_id: config.aws.access_key_id,
@@ -331,13 +327,20 @@
                     if (platformTarget === 'gateway') {
                         if (settings.account.license === 'professional') {
                             request['password'] = crypto.randomBytes(16).toString('hex');
+                            request['tools'] = ['switchboard'];
                         }
                         uri = '/range/aws/gateway';
                         success = tunnelSuccess;
-                    } else if (platformTarget === 'splunk' || platformTarget === 'elastic') {
+                    } else if (platformTarget === 'splunk') {
                         uri = '/range/aws/siem';
                         success = siemSuccess;
-                        request['siem'] = (platformTarget === 'splunk') ? 'splunk' : 'elastic';
+                        request['siem'] = 'splunk';
+                        request['tools'] = ['splunk', 'sysmon'];
+                    } else if (platformTarget === 'elastic'){
+                        uri = '/range/aws/siem';
+                        success = siemSuccess;
+                        request['siem'] = 'elastic';
+                        request['tools'] = ['elastic'];
                     } else {
                         uri = '/range/aws';
                         success = rangeSuccess;
@@ -380,12 +383,11 @@
                             rsa_key: JSON.parse(loadData(config.gcp.rsa_key))['private_key']
                         }
                     }
-                    const uri = '/range/gcp/gateway'
+                    const uri = '/range/gcp/gateway';
                     fetchGatekeeper(uri, {
                         method: 'POST',
                         body: JSON.stringify(request)
                     }).then(res => res.json()).then(tunnelSuccess).catch(failure);
-
                 });
             })
         });
@@ -399,27 +401,29 @@
             }).then(res => res.json()).then(res => {
                 $('#aws-platform').empty().append(
                     Object.entries(res).map(([name, option]) =>
-                        $(`<option value="${name}" data-tools="${option.tools}">${name} server</option>`))).trigger('change');
+                        $(`<option value="${name}" data-tools="${option.tools}">${option.display_name}</option>`))).trigger('change');
             });
         }
 
         function refreshPage(){
             fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                $('#aws-key').val(config.aws?.key_name || '')
-                $('#aws-access-key').val(config.aws?.access_key_id || '')
-                $('#aws-secret-key').val(config.aws?.secret_access_key || '')
-                $('#user_id').val(config.gcp?.user_id || '')
-                $('#project').val(config.gcp?.project || '')
-                $('#rsa_key').val(config.gcp?.rsa_key || '')
-                $('#ssh_user').val(config.gcp?.ssh_user || '')
-                $('#ssh_key').val(config.gcp?.ssh_key || '')
+                $('#aws-key').val(config.aws?.key_name || '');
+                $('#aws-access-key').val(config.aws?.access_key_id || '');
+                $('#aws-secret-key').val(config.aws?.secret_access_key || '');
+                $('#user_id').val(config.gcp?.user_id || '');
+                $('#project').val(config.gcp?.project || '');
+                $('#rsa_key').val(config.gcp?.rsa_key || '');
+                $('#ssh_user').val(config.gcp?.ssh_user || '');
+                $('#ssh_key').val(config.gcp?.ssh_key || '');
 
-                $("#select-redirector").empty()
+                $("#select-redirector").empty();
                 fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
                     Object.keys(redirectors).forEach(host => {
-                        $('#select-redirector').append(`<option value="${host}">${host}</option>`)
+                        $('#select-redirector').append(`<option value="${host}">${host}</option>`);
                     })
-                }).then(launchSidebar($('#right-sidebar-cloud')));
+                }).then(() => {
+                    if (!(config?.aws || config?.gcp)) $('#config-cloud-plugin').click();
+                });
             });
         }
 
