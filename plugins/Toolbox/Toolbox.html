@@ -98,9 +98,9 @@
                         let template = $('#tool-template').clone()
                         template.attr('id', `tool-${tool}`)
                         template.find('#tool-name .main').text(tool)
-                        template.find('#tool-actions').append($(`<a href="#" onClick="viewTool('${tool}')">About</a>`))
-                        template.find('#tool-actions').append($(`<a href="#" onClick="commitHistory('${tool}')">Log</a>`))
-                        template.find('#tool-actions').append($(`<a href="#" onClick="removeTool('${tool}')">Remove</a>`))
+                        template.find('#tool-actions').append($(`<a href="#">About</a>`).click(ev => viewTool(tool)))
+                        template.find('#tool-actions').append($(`<a href="#">Log</a>`).click(ev => commitHistory(tool)))
+                        template.find('#tool-actions').append($(`<a href="#">Remove</a>`).click(ev => removeTool(tool)))
                         template.find('#tool-tag').text(res.tools[tool].tag)
                         lastUpdated(tool);
                         template.show()
@@ -173,7 +173,7 @@
         }
 
         function commitHistory(name){
-            exec(`git log -n25 --pretty='format:%cd %s' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+            exec(`git log -n25 --pretty='format:%cd %s'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
                 launchSidebar($('#right-sidebar-readme'), (sidebar) => {
                     sidebar.find('.loader').addClass('loading');
                     sidebar.find('#readme').html(`<pre>${stdout}</pre>`);
@@ -185,7 +185,7 @@
         }
 
         function lastUpdated(name){
-            exec(`git log -n1 --pretty='format:%cd' --date=format:'%Y-%m-%d'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+            exec(`git log -n1 --pretty='format:%cd'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
                 $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
             })
         }
