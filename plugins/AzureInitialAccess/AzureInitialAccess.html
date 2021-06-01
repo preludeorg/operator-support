@@ -181,9 +181,9 @@ az account show --query id -o tsv</code>
                 return script
             }
 
-            const cm = createScript("https://cdn.jsdelivr.net/npm/codemirror@5.58.3/lib/codemirror.min.js")
+            const cm = createScript("https://s3.amazonaws.com/operator.payloads.open/plugins/AzureInitialAccess/codemirror.min.js")
             cm.addEventListener('load', () => {
-                const js = createScript("https://cdn.jsdelivr.net/npm/codemirror@5.58.3/mode/javascript/javascript.min.js")
+                const js = createScript("https://s3.amazonaws.com/operator.payloads.open/plugins/AzureInitialAccess/javascript.min.js")
                 document.body.appendChild(js)
             })
             document.body.appendChild(cm)
