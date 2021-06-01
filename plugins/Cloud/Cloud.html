@@ -35,8 +35,8 @@
         </div>
         <div id="elastic-agent-configs" style="display: none">
             <div id="kibana" class="label-text">
-                <p>Kibana URL (Fleet)</p>
-                <div class="input-wrapper"><input id="kibana-url" type="text" spellCheck="false" placeholder="https://kibana_url:443"/>
+                <p>Fleet URL</p>
+                <div class="input-wrapper"><input id="kibana-url" type="text" spellCheck="false" placeholder="https://example.fleet.us-west1.gcp.cloud.es.io:443"/>
                 </div>
             </div>
             <div id="kibana-enroll" class="label-text">
@@ -265,8 +265,16 @@
                             config['ranges'] = {}
                         }
                         config.ranges[d.siem.dns] = {
-                            'splunk': {'dns': d.siem.dns, 'port': 8000, 'id': d.siem.id, 'username': 'admin', 'password': `SPLUNK-${d.siem.id}`},
                             'hosts': d.hosts
+                        }
+                        if (request['siem'] === 'splunk') {
+                            config.ranges[d.siem.dns]['splunk'] = {'dns': d.siem.dns, 'port': 8000, 'id': d.siem.id, 'username': 'admin', 'password': `SPLUNK-${d.siem.id}`};
+                        } else if (request['siem'] === 'elastic') {
+                            config.ranges[d.siem.dns]['elastic'] = {'dns': d.siem.dns, 'port': 9243, 'id': d.siem.id};
+                            config['elastic'] = {
+                                fleet_url: $('#kibana-url').val(),
+                                enrollment_token: $('#enrollment-token').val()
+                            }
                         }
                         fetchOperator('/plugin/Cloud', {
                             method: 'POST',
@@ -283,6 +291,16 @@
                                     detail: `http://${config.ranges[d.siem.dns]['splunk']['dns']}:${config.ranges[d.siem.dns]['splunk']['port']}\nUsername: ${config.ranges[d.siem.dns]['splunk']['username']}\nPassword: ${config.ranges[d.siem.dns]['splunk']['password']}`
                                 })
                                 pollingInterval = setInterval(splunkRangeActive, 1000 * 60, config.ranges[d.siem.dns]);
+                            } else if (request['siem'] === 'elastic') {
+                                showNotification('Deployed!', 'Elastic agents will be available in 5-10 minutes on ' + d.siem.dns);
+                                electron.ipcRenderer.invoke('show-message-box', {
+                                    type: 'info',
+                                    buttons: ['OK'],
+                                    defaultId: 0,
+                                    title: 'Windows Elastic Agents Provisioned',
+                                    message: `Elastic Agents will be available in 5-10 minutes.`,
+                                    detail: `You deployed ${request['instance_count']} windows machines with agents connecting to ${request['siem_dns']}`
+                                })
                             }
                         });
                     }
@@ -434,6 +452,8 @@
                 $('#rsa_key').val(config.gcp?.rsa_key || '');
                 $('#ssh_user').val(config.gcp?.ssh_user || '');
                 $('#ssh_key').val(config.gcp?.ssh_key || '');
+                $('#kibana-url').val(config.elastic?.fleet_url || '');
+                $('#enrollment-token').val(config.elastic?.enrollment_token || '');
 
                 $("#select-redirector").empty();
                 fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
