@@ -33,6 +33,19 @@
                 </div>
             </div>
         </div>
+        <div id="elastic-agent-configs" style="display: none">
+            <div id="kibana" class="label-text">
+                <p>Kibana URL (Fleet)</p>
+                <div class="input-wrapper"><input id="kibana-url" type="text" spellCheck="false" placeholder="https://kibana_url:443"/>
+                </div>
+            </div>
+            <div id="kibana-enroll" class="label-text">
+                <p>Fleet enrollment token</p>
+                <div class="input-wrapper"><input id="enrollment-token" type="text" spellCheck="false" placeholder="Enrollment token..."/>
+                </div>
+            </div>
+
+        </div>
         <button id="aws-deploy">Deploy</button>
     </div>
     <div id="gcp" style="display: none;">
@@ -226,6 +239,10 @@
                 } else if (ev.target.value === 'splunk') {
                     $('#range-configs').show();
                     $('#siem-configs').show();
+                } else if (ev.target.value === 'elastic') {
+                    $('#range-configs').show();
+                    $('#siem-configs').show();
+                    $('#elastic-agent-configs').show();
                 } else {
                     $('#range-configs').show();
                 }
@@ -341,6 +358,8 @@
                         success = siemSuccess;
                         request['siem'] = 'elastic';
                         request['tools'] = ['elastic'];
+                        request['siem_dns'] = $('#kibana-url').val();
+                        request['enrollment_token'] = $('#enrollment-token').val();
                     } else {
                         uri = '/range/aws';
                         success = rangeSuccess;
