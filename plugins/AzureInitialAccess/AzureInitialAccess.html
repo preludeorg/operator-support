@@ -320,7 +320,6 @@ az account show --query id -o tsv</code>
 
     function populateReviewCard(config) {
         let configDiv = document.querySelector('#launch-config');
-        debugger;
         if (config.hasOwnProperty('agent') && config.hasOwnProperty('targets') && config.hasOwnProperty('azure')) {
             let launchConfig = {
                 agent: config['agent'],

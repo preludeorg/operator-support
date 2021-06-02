@@ -64,7 +64,7 @@
 <div id="init-plugin">
     <script>
         const rightSidebar = $('#right-sidebar-plugin-configure');
-        if (!rightSidebar.find('#credential-content')) {
+        if (!rightSidebar.find('#credential-content').length) {
             rightSidebar.find('.adversary-heading-container').after(`
                 <div id="credential-content" class="label-text">
                 <br>
@@ -447,7 +447,7 @@
                         $('#select-redirector').append(`<option value="${host}">${host}</option>`);
                     })
                 }).then(() => {
-                    if (!(config?.aws || config?.gcp)) $('#right-sidebar-plugin-configure').click();
+                    if (!(config?.aws || config?.gcp)) $('#configure-plugin').click();
                 });
             });
         }
