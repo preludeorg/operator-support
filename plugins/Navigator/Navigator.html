@@ -28,7 +28,7 @@
         });
 
         $('#navigation-adversary').change(ev => {
-            fetch('https://raw.githubusercontent.com/preludeorg/operator-support/master/plugins/navigator/template.json')
+            fetch('https://raw.githubusercontent.com/preludeorg/operator-support/master/plugins/Navigator/template.json')
                 .then(res => res.json())
                 .then(constructLayerFile)
                 .catch(err => console.log(err))
