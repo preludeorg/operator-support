@@ -61,83 +61,62 @@
     <div class="loader"></div>
 </div>
 
-<div id="right-sidebar-cloud" class="right-sidebar-quarter loader-container" style="display:none;">
-    <div class="top-right">
-        <img class="close-sidebar" src="../static/assets/close-icon.svg">
-    </div>
-    <div class="label-text">
-        <br>
-        <h4>Credentials</h4>
-        <hr>
-        <br>
-        <div class="loader-container">
-            <div class="label-text">
-                <p>Provider</p>
-                <select id="cloud-provider">
-                    <option value="aws">Amazon Web Services (AWS)</option>
-                    <option value="gcp">Google Cloud Platform (GCP)</option>
-                </select>
-            </div>
-            <div id="creds-aws">
-                <div class="label-text">
-                    <p>AWS access key</p>
-                    <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
-                </div>
-                <div class="label-text">
-                    <p>AWS secret key</p>
-                    <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
-                </div>
-                <div class="label-text">
-                    <p>Private key path</p>
-                    <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
-                </div>
-            </div>
-            <div id="creds-gcp" style="display: none;">
-                <div class="label-text">
-                    <p>Project ID</p>
-                    <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
-                </div>
-                <div class="label-text">
-                    <p>Service account</p>
-                    <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
-                </div>
-                <div class="label-text">
-                    <p>Service account key file path</p>
-                    <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
-                </div>
-                <div class="label-text">
-                    <p>Project-wide SSH user</p>
-                    <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
-                </div>
-                <div class="label-text">
-                    <p>Project-wide SSH key file path</p>
-                    <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
-                </div>
-            </div>
-            <button id="set-credentials">Save</button>
-            <div class="loader"></div>
-        </div>
-    </div>
-    <div class="loader"></div>
-</div>
-
 <div id="init-plugin">
     <script>
-        function openCloudProviderConfig(ev) {
-            launchSidebar($('#right-sidebar-cloud'));
-        }
-
-        EVENTS.on('section:dock', Object.assign((dock) => {
-            if (!dock.filter(e => e.id === 'config-cloud-plugin').length && document.getElementById('cloud-div') !== null) {
-                EVENTS.emit('section:dock:rebuild', [{
-                        id: 'config-cloud-plugin',
-                        icon: '../static/assets/settings-icon.svg',
-                        handler: openCloudProviderConfig,
-                        tooltip: 'Open provider configuration modal'
-                    }].concat(dock)
-                );
-            }
-        }));
+        $('#right-sidebar-plugin-configure .adversary-heading-container').after(`
+            <div class="label-text">
+            <br>
+            <h4>Credentials</h4>
+            <hr>
+            <br>
+            <div class="loader-container">
+                <div class="label-text">
+                    <p>Provider</p>
+                    <select id="cloud-provider">
+                        <option value="aws">Amazon Web Services (AWS)</option>
+                        <option value="gcp">Google Cloud Platform (GCP)</option>
+                    </select>
+                </div>
+                <div id="creds-aws">
+                    <div class="label-text">
+                        <p>AWS access key</p>
+                        <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
+                    </div>
+                    <div class="label-text">
+                        <p>AWS secret key</p>
+                        <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
+                    </div>
+                    <div class="label-text">
+                        <p>Private key path</p>
+                        <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
+                    </div>
+                </div>
+                <div id="creds-gcp" style="display: none;">
+                    <div class="label-text">
+                        <p>Project ID</p>
+                        <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
+                    </div>
+                    <div class="label-text">
+                        <p>Service account</p>
+                        <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
+                    </div>
+                    <div class="label-text">
+                        <p>Service account key file path</p>
+                        <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
+                    </div>
+                    <div class="label-text">
+                        <p>Project-wide SSH user</p>
+                        <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
+                    </div>
+                    <div class="label-text">
+                        <p>Project-wide SSH key file path</p>
+                        <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
+                    </div>
+                </div>
+                <button id="set-credentials">Save</button>
+                <div class="loader"></div>
+            </div>
+        </div>`);
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
@@ -465,7 +444,7 @@
                         $('#select-redirector').append(`<option value="${host}">${host}</option>`);
                     })
                 }).then(() => {
-                    if (!(config?.aws || config?.gcp)) $('#config-cloud-plugin').click();
+                    if (!(config?.aws || config?.gcp)) $('#right-sidebar-plugin-configure').click();
                 });
             });
         }
