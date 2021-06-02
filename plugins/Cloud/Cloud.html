@@ -63,13 +63,15 @@
 
 <div id="init-plugin">
     <script>
-        $('#right-sidebar-plugin-configure .adversary-heading-container').after(`
-            <div class="label-text">
-            <br>
-            <h4>Credentials</h4>
-            <hr>
-            <br>
-            <div class="loader-container">
+        const rightSidebar = $('#right-sidebar-plugin-configure');
+        if (!rightSidebar.find('#credential-content')) {
+            rightSidebar.find('.adversary-heading-container').after(`
+                <div id="credential-content" class="label-text">
+                <br>
+                <h4>Credentials</h4>
+                <hr>
+                <br>
+                <div class="loader-container">
                 <div class="label-text">
                     <p>Provider</p>
                     <select id="cloud-provider">
@@ -115,8 +117,9 @@
                 </div>
                 <button id="set-credentials">Save</button>
                 <div class="loader"></div>
-            </div>
-        </div>`);
+                </div>
+            </div>`);
+        }
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
