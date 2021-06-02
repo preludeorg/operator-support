@@ -236,17 +236,21 @@
                 if (ev.target.value === 'gateway') {
                     $('#range-configs').hide();
                     $('#siem-configs').hide();
+                    $('#elastic-agent-configs').hide();
                 } else if (ev.target.value === 'splunk') {
                     $('#range-configs').show();
                     $('#siem-configs').show();
+                    $('#elastic-agent-configs').hide();
                 } else if (ev.target.value === 'elastic') {
                     $('#range-configs').show();
                     $('#siem-configs').show();
                     $('#elastic-agent-configs').show();
                 } else {
                     $('#range-configs').show();
+                    $('#siem-configs').hide();
+                    $('#elastic-agent-configs').hide();
                 }
-            })
+            });
 
             $('#aws-deploy').click((ev) => {
                 $("#cloud-div .loader").addClass("loading")
