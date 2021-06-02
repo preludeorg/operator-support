@@ -247,12 +247,6 @@ az account show --query id -o tsv</code>
     function launchAgents() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
         fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
-            config['azure'] = {
-                tenant_id: creds.find('#tenant-id').val(),
-                subscription_id: creds.find('#subscription-id').val(),
-                app_id: creds.find('#app-id').val(),
-                app_password: creds.find('#app-password').val()
-            };
             let editor = document.querySelector('#launch-config').querySelector('.CodeMirror').CodeMirror;
             let liveConfig = JSON.parse(editor.getValue());
             config['agent'] = liveConfig['agent'];
