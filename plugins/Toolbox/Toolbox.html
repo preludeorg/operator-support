@@ -17,8 +17,11 @@
         float: right;
         text-transform: uppercase;
     }
+    #toolbox-location-container:hover {
+        background: #222 !important;
+    }
 </style>
-<script type="text/javascript" src="https://s3.amazonaws.com/operator.payloads.open/plugins/Toolbox/showdown.min.js"></script>
+<script type="text/javascript" src="https://s3.amazonaws.com/operator.payloads.dev/plugins/Toolbox/showdown.min.js"></script>
 
 <div id="toolbox-container" class="loader-container">
     <div class="profile-heading-container">
@@ -32,7 +35,9 @@
             </p>
         </div>
     </div>
-    <h4 class="split">My toolbox: <span id="toolbox-location" class="main"></span></h4>
+    <h4 id="toolbox-location-container" class="split" style="display: block; background: #111; padding: 20px; border-radius: 6px; cursor: pointer;">My toolbox:
+        <span id="toolbox-location" class="main" style="font-family: 'ITC Franklin Gothic Std'; text-transform: none; letter-spacing: normal; font-weight: 100; font-size: 14px; display: block;"></span>
+    </h4>
     <br>
     <input placeholder="Enter the GitHub address of a tool you want" id="newTool" />
     <br>
@@ -60,7 +65,18 @@
         createStorage([TOOLBOX])
         
         $(document).ready(function () {
-            $('#toolbox-location').text(TOOLBOX);
+            $('#toolbox-location').text(TOOLBOX).parent().click((ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const node = document.createElement('input');
+              node.value = TOOLBOX;
+              document.body.appendChild(node);
+              node.select();
+              node.setSelectionRange(0, 99999);
+              document.execCommand("copy");
+              document.body.removeChild(node);
+              showNotification('Success', `${TOOLBOX} has been copied to your clipboard`);
+            });
             $('#newTool').on('change', (ev) => {
                 $('#toolbox-container .loader').toggleClass('loading', true);
                 ingestTool(ev.target.value).then(() => {
