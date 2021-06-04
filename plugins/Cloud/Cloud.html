@@ -63,6 +63,7 @@
 
 <div id="init-plugin">
     <script>
+        $('#configure-plugin').off('click.populateConfiguration');
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
@@ -129,114 +130,7 @@
             buildOptions();
             refreshPage();
 
-            $('#configure-plugin').on('click', (ev) => {
-                const rightSidebar = $('#right-sidebar-plugin-configure');
-                if (!rightSidebar.find('#credential-content').length) {
-                    rightSidebar.find('.adversary-heading-container').after(`
-                        <div id="credential-content" class="label-text">
-                        <br>
-                        <h4>Credentials</h4>
-                        <hr>
-                        <br>
-                        <div class="loader-container">
-                        <div class="label-text">
-                            <p>Provider</p>
-                            <select id="cloud-provider">
-                                <option value="aws">Amazon Web Services (AWS)</option>
-                                <option value="gcp">Google Cloud Platform (GCP)</option>
-                            </select>
-                        </div>
-                        <div id="creds-aws">
-                            <div class="label-text">
-                                <p>AWS access key</p>
-                                <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
-                            </div>
-                            <div class="label-text">
-                                <p>AWS secret key</p>
-                                <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
-                            </div>
-                            <div class="label-text">
-                                <p>Private key path</p>
-                                <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
-                            </div>
-                        </div>
-                        <div id="creds-gcp" style="display: none;">
-                            <div class="label-text">
-                                <p>Project ID</p>
-                                <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
-                            </div>
-                            <div class="label-text">
-                                <p>Service account</p>
-                                <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
-                            </div>
-                            <div class="label-text">
-                                <p>Service account key file path</p>
-                                <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
-                            </div>
-                            <div class="label-text">
-                                <p>Project-wide SSH user</p>
-                                <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
-                            </div>
-                            <div class="label-text">
-                                <p>Project-wide SSH key file path</p>
-                                <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
-                            </div>
-                        </div>
-                        <button id="set-credentials">Save</button>
-                        <div class="loader"></div>
-                        </div>
-                    </div>`);
-
-                    $('#cloud-provider').on('change', (ev) => {
-                        Array.from(ev.target).forEach(opt => $('#' + opt.value).hide())
-                        Array.from(ev.target).forEach(opt => $('#creds-' + opt.value).hide())
-                        $('#' + ev.target.value).show();
-                        $('#creds-' + ev.target.value).show();
-                    });
-
-                    $('#set-credentials').click((ev) => {
-                        fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                            config['aws'] = {
-                                key_name: $('#aws-key').val(),
-                                access_key_id: $('#aws-access-key').val(),
-                                secret_access_key: $('#aws-secret-key').val()
-                            }
-                            config['gcp'] = {
-                                user_id: $('#user_id').val(),
-                                project: $('#project').val(),
-                                ssh_user: $('#ssh_user').val(),
-                                ssh_key: $('#ssh_key').val(),
-                                rsa_key: $('#rsa_key').val()
-                            }
-                            fetchOperator('/plugin/Cloud', {
-                                method: 'POST',
-                                body: JSON.stringify(config)
-                            }).then(alert('Credentials saved!'))
-                        });
-                    });
-
-                    $('#aws-platform').on('change', function (ev) {
-                        if (ev.target.value === 'gateway') {
-                            $('#range-configs').hide();
-                            $('#siem-configs').hide();
-                            $('#elastic-agent-configs').hide();
-                        } else if (ev.target.value === 'splunk') {
-                            $('#range-configs').show();
-                            $('#siem-configs').show();
-                            $('#elastic-agent-configs').hide();
-                        } else if (ev.target.value === 'elastic') {
-                            $('#range-configs').show();
-                            $('#siem-configs').show();
-                            $('#elastic-agent-configs').show();
-                        } else {
-                            $('#range-configs').show();
-                            $('#siem-configs').hide();
-                            $('#elastic-agent-configs').hide();
-                        }
-                    });
-                }
-                refreshPage();
-            });
+            $('#configure-plugin').on('click.populateConfiguration', populateConfigurationSidebar);
 
             $('#aws-deploy').click((ev) => {
                 $("#cloud-div .loader").addClass("loading")
@@ -417,7 +311,121 @@
                     }).then(res => res.json()).then(tunnelSuccess).catch(failure);
                 });
             });
+
+            refreshPage();
         });
+
+        function populateConfigurationSidebar(ev) {
+            console.log(ev);
+            const rightSidebar = $('#right-sidebar-plugin-configure');
+            fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                console.log('Appending');
+                rightSidebar.find('.adversary-heading-container').after(`
+                        <div id="credential-content" class="label-text">
+                        <br>
+                        <h4>Credentials</h4>
+                        <hr>
+                        <br>
+                        <div class="loader-container">
+                        <div class="label-text">
+                            <p>Provider</p>
+                            <select id="cloud-provider">
+                                <option value="aws">Amazon Web Services (AWS)</option>
+                                <option value="gcp">Google Cloud Platform (GCP)</option>
+                            </select>
+                        </div>
+                        <div id="creds-aws">
+                            <div class="label-text">
+                                <p>AWS access key</p>
+                                <div class="input-wrapper"><input id="aws-access-key" type="password" spellcheck="false"/></div>
+                            </div>
+                            <div class="label-text">
+                                <p>AWS secret key</p>
+                                <div class="input-wrapper"><input id="aws-secret-key" type="password" spellcheck="false"/></div>
+                            </div>
+                            <div class="label-text">
+                                <p>Private key path</p>
+                                <div class="input-wrapper"><input id="aws-key" type="text" spellcheck="false" placeholder=""/></div>
+                            </div>
+                        </div>
+                        <div id="creds-gcp" style="display: none;">
+                            <div class="label-text">
+                                <p>Project ID</p>
+                                <div class="input-wrapper"><input id="project" type="text" spellcheck="false"/></div>
+                            </div>
+                            <div class="label-text">
+                                <p>Service account</p>
+                                <div class="input-wrapper"><input id="user_id" type="text" spellcheck="false"/></div>
+                            </div>
+                            <div class="label-text">
+                                <p>Service account key file path</p>
+                                <div class="input-wrapper"><input id="rsa_key" type="text" spellcheck="false"/></div>
+                            </div>
+                            <div class="label-text">
+                                <p>Project-wide SSH user</p>
+                                <div class="input-wrapper"><input id="ssh_user" type="text" spellcheck="false"/></div>
+                            </div>
+                            <div class="label-text">
+                                <p>Project-wide SSH key file path</p>
+                                <div class="input-wrapper"><input id="ssh_key" type="text" spellcheck="false"/></div>
+                            </div>
+                        </div>
+                        <button id="set-credentials">Save</button>
+                        <div class="loader"></div>
+                        </div>
+                    </div>`);
+
+                setCloudConfigFields(config);
+
+                $('#cloud-provider').on('change', (ev) => {
+                    Array.from(ev.target).forEach(opt => $('#' + opt.value).hide())
+                    Array.from(ev.target).forEach(opt => $('#creds-' + opt.value).hide())
+                    $('#' + ev.target.value).show();
+                    $('#creds-' + ev.target.value).show();
+                });
+
+                $('#set-credentials').click((ev) => {
+                    fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
+                        config['aws'] = {
+                            key_name: $('#aws-key').val(),
+                            access_key_id: $('#aws-access-key').val(),
+                            secret_access_key: $('#aws-secret-key').val()
+                        }
+                        config['gcp'] = {
+                            user_id: $('#user_id').val(),
+                            project: $('#project').val(),
+                            ssh_user: $('#ssh_user').val(),
+                            ssh_key: $('#ssh_key').val(),
+                            rsa_key: $('#rsa_key').val()
+                        }
+                        fetchOperator('/plugin/Cloud', {
+                            method: 'POST',
+                            body: JSON.stringify(config)
+                        }).then(alert('Credentials saved!'));
+                    });
+                });
+
+                $('#aws-platform').on('change', function (ev) {
+                    if (ev.target.value === 'gateway') {
+                        $('#range-configs').hide();
+                        $('#siem-configs').hide();
+                        $('#elastic-agent-configs').hide();
+                    } else if (ev.target.value === 'splunk') {
+                        $('#range-configs').show();
+                        $('#siem-configs').show();
+                        $('#elastic-agent-configs').hide();
+                    } else if (ev.target.value === 'elastic') {
+                        $('#range-configs').show();
+                        $('#siem-configs').show();
+                        $('#elastic-agent-configs').show();
+                    } else {
+                        $('#range-configs').show();
+                        $('#siem-configs').hide();
+                        $('#elastic-agent-configs').hide();
+                    }
+                });
+            });
+        }
 
         function buildOptions(){
             fetchGatekeeper(constructEndpoint('/range', {
@@ -434,17 +442,7 @@
 
         function refreshPage(){
             fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                $('#aws-key').val(config.aws?.key_name || '');
-                $('#aws-access-key').val(config.aws?.access_key_id || '');
-                $('#aws-secret-key').val(config.aws?.secret_access_key || '');
-                $('#user_id').val(config.gcp?.user_id || '');
-                $('#project').val(config.gcp?.project || '');
-                $('#rsa_key').val(config.gcp?.rsa_key || '');
-                $('#ssh_user').val(config.gcp?.ssh_user || '');
-                $('#ssh_key').val(config.gcp?.ssh_key || '');
-                $('#kibana-url').val(config.elastic?.fleet_url || '');
-                $('#enrollment-token').val(config.elastic?.enrollment_token || '');
-
+                setCloudConfigFields(config);
                 $("#select-redirector").empty();
                 fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
                     Object.keys(redirectors).forEach(host => {
@@ -454,6 +452,19 @@
                     if (!(config?.aws || config?.gcp)) $('#configure-plugin').click();
                 });
             });
+        }
+
+        function setCloudConfigFields(config) {
+            $('#aws-key').val(config.aws?.key_name || '');
+            $('#aws-access-key').val(config.aws?.access_key_id || '');
+            $('#aws-secret-key').val(config.aws?.secret_access_key || '');
+            $('#user_id').val(config.gcp?.user_id || '');
+            $('#project').val(config.gcp?.project || '');
+            $('#rsa_key').val(config.gcp?.rsa_key || '');
+            $('#ssh_user').val(config.gcp?.ssh_user || '');
+            $('#ssh_key').val(config.gcp?.ssh_key || '');
+            $('#kibana-url').val(config.elastic?.fleet_url || '');
+            $('#enrollment-token').val(config.elastic?.enrollment_token || '');
         }
 
     });
