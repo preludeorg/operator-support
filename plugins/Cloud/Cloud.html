@@ -316,7 +316,6 @@
         function populateConfigurationSidebar(ev) {
             const rightSidebar = $('#right-sidebar-plugin-configure');
             fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                console.log('Appending');
                 rightSidebar.find('.adversary-heading-container').after(`
                         <div id="credential-content" class="label-text">
                         <br>
