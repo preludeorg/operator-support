@@ -311,12 +311,9 @@
                     }).then(res => res.json()).then(tunnelSuccess).catch(failure);
                 });
             });
-
-            refreshPage();
         });
 
         function populateConfigurationSidebar(ev) {
-            console.log(ev);
             const rightSidebar = $('#right-sidebar-plugin-configure');
             fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
                 console.log('Appending');
