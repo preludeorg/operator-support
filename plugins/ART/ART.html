@@ -92,11 +92,9 @@
               command: escapeTtpCommand(executor, ttp.executor.command ? ttp.executor.command : ttp.executor.steps)
             };
           });
-          if ("input_arguments" in ttp) {
-            Object.keys(ttp.input_arguments).forEach(arg => {
-              ART_FACTS[arg] = ttp.input_arguments[arg].default;
-            });
-          }
+          Object.keys(ttp?.input_arguments || {}).forEach(arg => {
+            ART_FACTS[arg] = ttp.input_arguments[arg].default;
+          });
           procedures.push(atk);
         });
         resolve(procedures);
