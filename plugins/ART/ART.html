@@ -92,7 +92,7 @@
               command: escapeTtpCommand(executor, ttp.executor.command ? ttp.executor.command : ttp.executor.steps)
             };
           });
-          Object.keys(ttp.input_arguments).forEach(arg => {
+          Object.keys(ttp?.input_arguments || {}).forEach(arg => {
             ART_FACTS[arg] = ttp.input_arguments[arg].default;
           });
           procedures.push(atk);
@@ -125,7 +125,8 @@
       "cmd": [new RegExp(`[\\^&]\\s*$`)],
       "sh": [new RegExp(`^#(?!{)`), new RegExp(`[\\\\;]\\s*$`), new RegExp(`\\bthen\\s*$`)],
       "bash": [new RegExp(`^#(?!{)`), new RegExp(`[\\\\;]\\s*$`), new RegExp(`\\bthen\\s*$`)],
-      "python": []
+      "python": [],
+      "manual": []
     };
     command = command.replaceAll(/#{([a-zA-Z0-9_\.\|]+)}/g, "#{art.$1}");
     return command.trim().split('\n').reduce((acc, part, idx) => {
