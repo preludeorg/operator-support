@@ -127,7 +127,8 @@
       "cmd": [new RegExp(`[\\^&]\\s*$`)],
       "sh": [new RegExp(`^#(?!{)`), new RegExp(`[\\\\;]\\s*$`), new RegExp(`\\bthen\\s*$`)],
       "bash": [new RegExp(`^#(?!{)`), new RegExp(`[\\\\;]\\s*$`), new RegExp(`\\bthen\\s*$`)],
-      "python": []
+      "python": [],
+      "manual": []
     };
     command = command.replaceAll(/#{([a-zA-Z0-9_\.\|]+)}/g, "#{art.$1}");
     return command.trim().split('\n').reduce((acc, part, idx) => {
