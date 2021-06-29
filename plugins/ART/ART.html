@@ -74,7 +74,7 @@
       try {
         let procedures = [];
         let data = loadYaml(file)
-        data.atomic_tests.forEach(ttp => {
+        data.atomic_tests.forEach((ttp, idx) => {
           let atk = {
             id: ttp.auto_generated_guid,
             name: ttp.name,
@@ -84,17 +84,22 @@
             technique: {id: data.attack_technique, name: data.display_name},
             platforms: {}
           };
+          const replacements = Object.keys(ttp?.input_arguments || {}).map(arg => {
+            const key = `${data.attack_technique}.${idx}.${arg}`
+            ART_FACTS[key] = ttp.input_arguments[arg].default;
+            return [`#{${arg}}`, `#{${key}}`];
+          });
           ttp.supported_platforms.forEach(p => {
             const platform = normalize(p);
             const executor = normalize(ttp.executor.name)
             atk.platforms[platform] = atk.platforms[platform] || {};
             atk.platforms[platform][executor] = {
-              command: escapeTtpCommand(executor, ttp.executor.command ? ttp.executor.command : ttp.executor.steps)
+              command: escapeTtpCommand(executor, ttp.executor.command ? ttp.executor.command : ttp.executor.steps, replacements)
             };
           });
-          Object.keys(ttp?.input_arguments || {}).forEach(arg => {
-            ART_FACTS[arg] = ttp.input_arguments[arg].default;
-          });
+          if (Object.keys(ttp?.input_arguments || {}).length) {
+            console.log(Object.keys(ttp?.input_arguments || {}), replacements, atk)
+          }
           procedures.push(atk);
         });
         resolve(procedures);
@@ -109,7 +114,7 @@
     return mapper.hasOwnProperty(n) ? mapper[n] : n;
   }
 
-  const escapeTtpCommand = function(executor, command) {
+  const escapeTtpCommand = function(executor, command, replacements) {
     const DELIMITERS = {
       "psh": ";\n",
       "pwsh": ";\n",
@@ -128,7 +133,8 @@
       "python": [],
       "manual": []
     };
-    command = command.replaceAll(/#{([a-zA-Z0-9_\.\|]+)}/g, "#{art.$1}");
+    command = replacements.reduce((command, [match, replacement]) =>
+      command.replaceAll(match, replacement), command).replaceAll(/#{([a-zA-Z0-9_\.\|]+)}/g, "#{art.$1}");
     return command.trim().split('\n').reduce((acc, part, idx) => {
       if (!idx || CONTINUATIONS[executor].filter(r => r.exec(acc.trim())).length) {
         return acc + (idx ? "\n" : "") + part;
