@@ -97,9 +97,6 @@
               command: escapeTtpCommand(executor, ttp.executor.command ? ttp.executor.command : ttp.executor.steps, replacements)
             };
           });
-          if (Object.keys(ttp?.input_arguments || {}).length) {
-            console.log(Object.keys(ttp?.input_arguments || {}), replacements, atk)
-          }
           procedures.push(atk);
         });
         resolve(procedures);
