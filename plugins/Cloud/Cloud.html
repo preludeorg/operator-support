@@ -44,7 +44,13 @@
                 <div class="input-wrapper"><input id="enrollment-token" type="text" spellCheck="false" placeholder="Enrollment token..."/>
                 </div>
             </div>
-
+        </div>
+        <div id="aws-tools" class="profile-heading-container" style="display: none; background: #111; border-radius: 4px; margin: 10px 0;opacity:0.9;">
+            <div class="body" style="margin-bottom: 10px;">
+                <strong class="profile-heading">Tools</strong>
+                <p>Select the tools you want installed as soon as the host becomes available.</p>
+            </div>
+            <div id="aws-tools-listing"></div>
         </div>
         <button id="aws-deploy">Deploy</button>
     </div>
@@ -55,7 +61,13 @@
                 <option value="gateway">Linux redirector</option>
             </select>
         </div>
-        <div id="gcp-tools" style="display: none"></div>
+        <div id="gcp-tools" class="profile-heading-container" style="display: none; background: #111; border-radius: 4px; margin: 10px 0;opacity:0.9;">
+            <div class="body" style="margin-bottom: 10px;">
+                <strong class="profile-heading">Tools</strong>
+                <p>Select the tools you want installed as soon as the host becomes available.</p>
+            </div>
+            <div id="gcp-tools-listing"></div>
+        </div>
         <button id="gcp-deploy">Deploy</button>
     </div>
     <div class="loader"></div>
@@ -235,6 +247,7 @@
                         platform: $('#aws-platform').val(),
                         callback: $('#select-redirector option:selected').val()+':'+settings.local.tcp_port,
                         instance_count: $('#instance-count').val(),
+                        tools: $('#aws-tools [data-tool] option[value="1"]:selected').parents('[data-tool]').toArray().map(t => $(t).attr('data-tool')),
                         config: {
                             key_name: config.aws.key_name.split('/').slice(-1)[0],
                             access_key_id: config.aws.access_key_id,
@@ -246,7 +259,6 @@
                     if (platformTarget === 'gateway') {
                         if (settings.account.license === 'professional') {
                             request['password'] = crypto.randomBytes(16).toString('hex');
-                            request['tools'] = ['switchboard'];
                         }
                         uri = '/range/aws/gateway';
                         success = tunnelSuccess;
@@ -254,12 +266,10 @@
                         uri = '/range/aws/siem';
                         success = siemSuccess;
                         request['siem'] = 'splunk';
-                        request['tools'] = ['splunk', 'sysmon'];
                     } else if (platformTarget === 'elastic'){
                         uri = '/range/aws/siem';
                         success = siemSuccess;
                         request['siem'] = 'elastic';
-                        request['tools'] = ['elastic'];
                         request['siem_dns'] = $('#kibana-url').val();
                         request['enrollment_token'] = $('#enrollment-token').val();
                     } else {
@@ -400,26 +410,6 @@
                         }).then(alert('Credentials saved!'));
                     });
                 });
-
-                $('#aws-platform').on('change', function (ev) {
-                    if (ev.target.value === 'gateway') {
-                        $('#range-configs').hide();
-                        $('#siem-configs').hide();
-                        $('#elastic-agent-configs').hide();
-                    } else if (ev.target.value === 'splunk') {
-                        $('#range-configs').show();
-                        $('#siem-configs').show();
-                        $('#elastic-agent-configs').hide();
-                    } else if (ev.target.value === 'elastic') {
-                        $('#range-configs').show();
-                        $('#siem-configs').show();
-                        $('#elastic-agent-configs').show();
-                    } else {
-                        $('#range-configs').show();
-                        $('#siem-configs').hide();
-                        $('#elastic-agent-configs').hide();
-                    }
-                });
             });
         }
 
@@ -432,7 +422,7 @@
             }).then(res => res.json()).then(res => {
                 $('#aws-platform').empty().append(
                     Object.entries(res).map(([name, option]) =>
-                        $(`<option value="${name}" data-tools="${option.tools}">${option.display_name}</option>`))).trigger('change');
+                        $(`<option value="${name}">${option.display_name}</option>`).data('config', option))).trigger('change');
             });
         }
 
@@ -449,6 +439,38 @@
                 });
             });
         }
+
+        $('#aws-platform').on('change', function (ev) {
+            if (ev.target.value === 'gateway') {
+                $('#aws #range-configs').hide();
+                $('#aws #siem-configs').hide();
+                $('#aws #elastic-agent-configs').hide();
+            } else if (ev.target.value === 'splunk') {
+                $('#aws #range-configs').show();
+                $('#aws #siem-configs').show();
+                $('#aws #elastic-agent-configs').hide();
+            } else if (ev.target.value === 'elastic') {
+                $('#aws #range-configs').show();
+                $('#aws #siem-configs').show();
+                $('#aws #elastic-agent-configs').show();
+            } else {
+                $('#aws #range-configs').show();
+                $('#aws #siem-configs').hide();
+                $('#aws #elastic-agent-configs').hide();
+            }
+
+            const tools = ($('#aws-platform').find(':selected').data('config').tools || []).map(tool =>
+                $(`<div id="aws-tool-${tool.tool}" class="label-text" data-tool="${tool.tool}">
+                    <p style="font-family: PF Din Mono; font-size: 11px; font-weight: 600 !important; line-height: 24px; text-transform: uppercase; letter-spacing: 2px;">${tool.title}</p>
+                    <span style="display: block; color: #999; font-size: 14px; font-weight: 100; margin: 0 0 5px;">${tool.description}</span>
+                    <select>
+                        <option value="1" selected="true">Enabled</option>
+                        <option value="0">Disabled</option>
+                    </select>
+                </div>`));
+
+            $('#aws-tools').find('#aws-tools-listing').empty().append(tools).parent().toggle(tools.length > 0);
+        });
 
         function setCloudConfigFields(config) {
             $('#aws-key').val(config.aws?.key_name || '');
