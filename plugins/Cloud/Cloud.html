@@ -269,7 +269,13 @@
                     fetchGatekeeper(uri, {
                         method: 'POST',
                         body: JSON.stringify(request)
-                    }).then(res => res.json()).then(res => {success(res, request)}).catch(failure);
+                    }).then(res => {
+                        if (res.status == 200) {
+                            res.json().then(res => success(res, request));
+                        } else {
+                            failure();
+                        }
+                    }).catch(failure);
                 });
             });
 
@@ -308,7 +314,13 @@
                     fetchGatekeeper(uri, {
                         method: 'POST',
                         body: JSON.stringify(request)
-                    }).then(res => res.json()).then(tunnelSuccess).catch(failure);
+                    }).then(res => {
+                        if (res.status == 200) {
+                            res.json().then(res => tunnelSuccess(res, request));
+                        } else {
+                            failure();
+                        }
+                    }).catch(failure);
                 });
             });
         });
