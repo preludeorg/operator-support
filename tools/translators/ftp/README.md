@@ -5,7 +5,7 @@ a protocol that Operator accepts, in this case HTTP.
 
 ## Get started
 
-> The example agent will run shell commands only, through the 'sh' executor
+> The example agent will only run shell commands through the 'sh' or 'psh' executor
 
 1. Start `server.py` on a server you control, which is reachable over port 21 from the computers you want to test.  
 2. Run `agent.py` on a compromised host. You should get a beacon inside Operator.
