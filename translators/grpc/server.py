@@ -28,7 +28,6 @@ if __name__ == '__main__':
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     beacon_pb2_grpc.add_BeaconServicer_to_server(Handler(args.operator), server)
     server.add_insecure_port('[::]:%s' % args.port)
+    print('[*] Server now ready')
     server.start()
     server.wait_for_termination()
-
-    server()
