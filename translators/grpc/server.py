@@ -18,6 +18,7 @@ class Handler(beacon_pb2_grpc.BeaconServicer):
         if res.text:
             return beacon_pb2.BeaconOutgoing(Beacon=res.text)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('GRPC server')
     parser.add_argument('-O', '--operator', required=False, default='http://localhost:3391')
@@ -30,4 +31,4 @@ if __name__ == '__main__':
     server.start()
     server.wait_for_termination()
 
-    serve()
+    server()
