@@ -77,7 +77,7 @@ class Beacon:
             Name=socket.gethostname(),
             Location=__file__,
             Platform=sys.platform,
-            Executors=['sh', 'psh'],
+            Executors=['sh'],
             Range='red',
             Pwd=os.getcwd(),
             Target=target,
