@@ -78,7 +78,7 @@ class Beacon:
             Location=__file__,
             Platform=sys.platform,
             Executors=['sh', 'psh'],
-            Range='dynamic',
+            Range='red',
             Pwd=os.getcwd(),
             Target=target,
             Links=links
