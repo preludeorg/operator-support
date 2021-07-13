@@ -19,7 +19,7 @@ class Executor:
     def run(self, i):
         i['pid'] = os.getpid()
         try:
-            print('[*] Executing instruction')
+            print('[*] Executing instruction (%s)' % i['pid'])
             if i['Executor'] == 'sh':
                 i['Response'] = self.bash(i)
             i['Status'] = 0
