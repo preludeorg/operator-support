@@ -32,6 +32,7 @@ if __name__ == '__main__':
             with self.fs.open(file, 'r') as beacon_file:
                 beacon = beacon_file.read()
                 res = requests.post(args.operator, data=beacon)
+                res.encoding = 'utf-8'
                 self.queue[file].put(res.text)
 
     # start server

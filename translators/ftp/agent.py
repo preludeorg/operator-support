@@ -100,4 +100,4 @@ if __name__ == '__main__':
     parser.add_argument('-J', '--jitter', required=False, default=10)
     args = parser.parse_args()
 
-    Beacon(args.host, args.user, args.password, args.jitter).monitor()
+    Beacon(args.host, args.user, args.password, int(args.jitter)).monitor()
