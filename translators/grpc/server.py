@@ -15,8 +15,8 @@ class Handler(beacon_pb2_grpc.BeaconServicer):
 
     def Handle(self, request, context):
         res = requests.post(self.operator, data=request.Beacon)
-        res.encoding = 'utf-8'
         if res.text:
+            res.encoding = 'utf-8'
             return beacon_pb2.BeaconOutgoing(Beacon=res.text)
 
 
