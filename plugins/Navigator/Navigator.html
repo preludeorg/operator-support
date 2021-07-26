@@ -10,7 +10,7 @@
     <option>Choose an adversary</option>
 </select>
 <object type="text/html" data="https://mitre-attack.github.io/attack-navigator/" background="#fff;" style="filter: invert(100%) grayscale(100%); margin: 0 -20px; width: calc(100% + 20px); height: 45%; min-height: 475px;"></object>
-<input style="display: none;" type="file" accept=".json" id="file" onchange="inputFunction()" />
+<input style="display: none;" type="file" accept=".json" id="file" />
 
 <script>
     Promise.all([
@@ -81,5 +81,7 @@
                 document.getElementById('file').value = '';
             });
         };
+
+        document.getElementById('file').addEventListener('change', inputFunction);
     });
 </script>
