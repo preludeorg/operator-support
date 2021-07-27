@@ -359,43 +359,44 @@ az account show --query id -o tsv</code>
             });
             let manualInput = document.getElementById('manual-callback');
             manualInput.addEventListener('input', checkAllAgentFieldsPopulated);
-
-            fetchGatekeeper(constructEndpoint(`/agents`, {
-                email: Settings.settings.account.email,
-                token: Settings.settings.account.token
-            }), {
-                method: 'GET',
-                redirect: 'follow'
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    let agentSelect = document.getElementById('select-agent');
-                    agentSelect.options.length = 1;
-                    data.forEach(agent => {
-                        if (agent.hasOwnProperty('initial_access')) {
-                            let option = new Option(agent.name, agent.name);
-                            option.setAttribute('data-protocols', agent.protocols);
-                            option.setAttribute('data-initial_access', window.btoa(JSON.stringify(agent.initial_access)));
-                            agentSelect.append(option);
-                        }
-                    });
-                    agentSelect.addEventListener('change', (ev) => {
-                        let agent = agentSelect.options[agentSelect.selectedIndex];
-                        let protocolSelect = document.getElementById('select-protocol');
-                        protocolSelect.options.length = 1;
-                        agent.getAttribute('data-protocols').split(',').forEach(p => {
-                            protocolSelect.append(new Option(p, p));
+            fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+                fetchGatekeeper(constructEndpoint(`/agents`, {
+                    email: settings.account.email,
+                    token: settings.account.token
+                }), {
+                    method: 'GET',
+                    redirect: 'follow'
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        let agentSelect = document.getElementById('select-agent');
+                        agentSelect.options.length = 1;
+                        data.forEach(agent => {
+                            if (agent.hasOwnProperty('initial_access')) {
+                                let option = new Option(agent.name, agent.name);
+                                option.setAttribute('data-protocols', agent.protocols);
+                                option.setAttribute('data-initial_access', window.btoa(JSON.stringify(agent.initial_access)));
+                                agentSelect.append(option);
+                            }
                         });
-                        protocolSelect.addEventListener('change', checkAllAgentFieldsPopulated);
+                        agentSelect.addEventListener('change', (ev) => {
+                            let agent = agentSelect.options[agentSelect.selectedIndex];
+                            let protocolSelect = document.getElementById('select-protocol');
+                            protocolSelect.options.length = 1;
+                            agent.getAttribute('data-protocols').split(',').forEach(p => {
+                                protocolSelect.append(new Option(p, p));
+                            });
+                            protocolSelect.addEventListener('change', checkAllAgentFieldsPopulated);
+                            checkAllAgentFieldsPopulated();
+                        });
                         checkAllAgentFieldsPopulated();
-                    });
-                    checkAllAgentFieldsPopulated();
-                    $("#AzureInitialAccess-div .loader").removeClass("loading");
-                })
-                .catch(e => {
-                    console.log(e);
-                    $("#AzureInitialAccess-div .loader").removeClass("loading");
-                })
+                        $("#AzureInitialAccess-div .loader").removeClass("loading");
+                    })
+                    .catch(e => {
+                        console.log(e);
+                        $("#AzureInitialAccess-div .loader").removeClass("loading");
+                    })
+            });
         });
     }
 
