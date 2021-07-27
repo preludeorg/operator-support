@@ -361,8 +361,8 @@ az account show --query id -o tsv</code>
             manualInput.addEventListener('input', checkAllAgentFieldsPopulated);
 
             fetchGatekeeper(constructEndpoint(`/agents`, {
-                email: SETTINGS.account.email,
-                token: SETTINGS.account.token
+                email: Settings.settings.account.email,
+                token: Settings.settings.account.token
             }), {
                 method: 'GET',
                 redirect: 'follow'
