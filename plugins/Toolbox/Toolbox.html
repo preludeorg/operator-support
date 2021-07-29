@@ -60,9 +60,9 @@
 </div>
 
 <script>
-    fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+    Basic.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
         const TOOLBOX = path.join(settings.local.workspace, "plugins", "Toolbox", "tools");
-        createStorage([TOOLBOX])
+        Basic.createStorage([TOOLBOX])
         
         $(document).ready(function () {
             $('#toolbox-location').text(TOOLBOX).parent().click((ev) => {
@@ -75,7 +75,7 @@
               node.setSelectionRange(0, 99999);
               document.execCommand("copy");
               document.body.removeChild(node);
-              showNotification('Success', `${TOOLBOX} has been copied to your clipboard`);
+              Basic.showNotification('Success', `${TOOLBOX} has been copied to your clipboard`);
             });
             $('#newTool').on('change', (ev) => {
                 $('#toolbox-container .loader').toggleClass('loading', true);
@@ -103,7 +103,7 @@
         });
 
         function displayTools(){
-            fetchOperator('/plugin/toolbox', {
+            Basic.fetchOperator('/plugin/toolbox', {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
                 $('#newTool').val('');
@@ -131,23 +131,23 @@
                 if(url){
                     exec(`git clone ${url} --recursive`, {cwd: path.join(TOOLBOX, "")}, (error, stdout, stderr) => {
                         if (error) {
-                            showNotification('Failed to download!', stderr);
+                            Basic.showNotification('Failed to download!', stderr);
                             resolve();
                             return;
                         }
                         const name = url.split('/').pop().split('.')[0];
-                        fetchOperator('/plugin/toolbox', {
+                        Basic.fetchOperator('/plugin/toolbox', {
                             method: 'GET'
                         }).then(res => res.json()).then(res => {
                             let tool = {};
                             tool[name] = {'url':url, 'tag':tag};
                             res['tools'] = Object.assign({}, res.tools, tool);
-                            return fetchOperator('/plugin/toolbox', {
+                            return Basic.fetchOperator('/plugin/toolbox', {
                                 method: 'POST',
                                 body: JSON.stringify(res)
                             })
                         }).then(displayTools).then(resolve);
-                        showNotification('Successful download', `${name} is now ready to use`);
+                        Basic.showNotification('Successful download', `${name} is now ready to use`);
                     });
                 } else {
                     resolve();
@@ -156,12 +156,12 @@
         }
 
         function removeTool(name){
-            fetchOperator('/plugin/toolbox', {
+            Basic.fetchOperator('/plugin/toolbox', {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
                 delete res.tools[name]
-                deleteDir(path.join(TOOLBOX, name))
-                fetchOperator('/plugin/toolbox', {
+                Basic.deleteDir(path.join(TOOLBOX, name))
+                Basic.fetchOperator('/plugin/toolbox', {
                     method: 'POST',
                     body: JSON.stringify(res)
                 })
@@ -176,7 +176,7 @@
         }
 
         function viewTool(name){
-            const readme = loadData(path.join(TOOLBOX, name, "README.md"))
+            const readme = Basic.loadData(path.join(TOOLBOX, name, "README.md"))
             let converter = new showdown.Converter(),
                 text = readme, html = converter.makeHtml(text);
             launchSidebar($('#right-sidebar-readme'), (sidebar) => {
