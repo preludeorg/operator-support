@@ -79,11 +79,11 @@
         fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             $(document).ready(function () {
                 fetchOperator('/plugin/Cloud', {method: 'GET'}).then(res => res.json()).then(config => {
-                    Events.buss.listeners('redirector:destroy').map(listener => {
-                        Events.buss.off('redirector:destroy', listener);
+                    Events.bus.listeners('redirector:destroy').map(listener => {
+                        Events.bus.off('redirector:destroy', listener);
                     });
 
-                    Events.buss.on('redirector:destroy', (ev) => {
+                    Events.bus.on('redirector:destroy', (ev) => {
                         const host = ev.host;
                         new Promise((resolve, reject) => {
                             if (/.*amazonaws\.com$/gi.exec(host)) {
@@ -119,12 +119,12 @@
                                 }).then(resolve).catch(reject);
                             }
                         }).then(() => {
-                            Events.buss.emit('redirector:destroyed', {
+                            Events.bus.emit('redirector:destroyed', {
                                 host: host,
                                 error: null
                             });
                         }).catch((err) => {
-                            Events.buss.emit('redirector:destroyed', {
+                            Events.bus.emit('redirector:destroyed', {
                                 host: host,
                                 error: err
                             });
