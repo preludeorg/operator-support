@@ -14,11 +14,11 @@
 
 <script>
     Promise.all([
-        fetchOperator('/adversary', {
+        Basic.fetchOperator('/adversary', {
             method: 'GET'
         })
         .then(res => res.json()),
-        fetchOperator('/attack', {
+        Basic.fetchOperator('/attack', {
             method: 'GET'
         })
         .then(res => res.json())
@@ -50,13 +50,13 @@
                 ...template,
                 techniques: data
             }, null, 2);
-            storeData(layer, `${adversary.name}.json`);
-            showNotification('Generated layer', process.cwd());
+            Basic.storeData(layer, `${adversary.name}.json`);
+            Basic.showNotification('Generated layer', process.cwd());
         };
 
         function inputFunction() {
             const file = document.getElementById('file').files[0];
-            const data = JSON.parse(loadData(file.path));
+            const data = JSON.parse(Basic.loadData(file.path));
 
             const lookup = Object.values(data.techniques).reduce((acc, technique) => ({
                 ...acc,
@@ -69,7 +69,7 @@
                 .filter(procedure => (lookup[procedure.technique.id] || {})[procedure.tactic])
                 .map(procedure => procedure.id);
 
-            fetchOperator(`/adversary`, {
+            Basic.fetchOperator(`/adversary`, {
               method: 'POST',
               body: JSON.stringify({
                 name: 'User Generated Adversary',
@@ -77,7 +77,7 @@
               })
             })
             .then(() => {
-                showNotification('Generated Adversary');
+                Basic.showNotification('Generated Adversary');
                 document.getElementById('file').value = '';
             });
         };
