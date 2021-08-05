@@ -172,7 +172,7 @@ az account show --query id -o tsv</code>
     }
 
     function refreshPage(){
-        Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+        Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
             setAzureElems(config);
             const createScript = (src) => {
                 const script = document.createElement('script')
@@ -207,14 +207,14 @@ az account show --query id -o tsv</code>
     function saveCredentials() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
         const creds = $('#provide-credentials');
-        Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+        Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
             config['azure'] = {
                 tenant_id: creds.find('#tenant-id').val(),
                 subscription_id: creds.find('#subscription-id').val(),
                 app_id: creds.find('#app-id').val(),
                 app_password: creds.find('#app-password').val()
             };
-            Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)});
+            Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)});
             testCredentials(config);
         });
     }
@@ -246,7 +246,7 @@ az account show --query id -o tsv</code>
 
     function launchAgents() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
-        Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+        Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
             let editor = document.querySelector('#launch-config').querySelector('.CodeMirror').CodeMirror;
             let liveConfig = JSON.parse(editor.getValue());
             config['agent'] = liveConfig['agent'];
@@ -273,7 +273,7 @@ az account show --query id -o tsv</code>
 
     function saveTargets() {
         $("#AzureInitialAccess-div .loader").addClass("loading");
-        Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+        Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
             config['targets'] = {
                 resource_group: $('#resource-groups').val(),
                 virtual_machines: {}
@@ -283,7 +283,7 @@ az account show --query id -o tsv</code>
                 if (!config['targets']['virtual_machines'].hasOwnProperty(os)) config['targets']['virtual_machines'][os] = [];
                 config['targets']['virtual_machines'][os].push(opt.value);
             });
-            Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
+            Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
                 showCard('configure-agents');
                 $("#AzureInitialAccess-div .loader").removeClass("loading");
             });
@@ -297,7 +297,7 @@ az account show --query id -o tsv</code>
         let agentSelect = document.getElementById('select-agent');
         let agentOpt = agentSelect.options[agentSelect.selectedIndex];
         if (callback === 'manual') callback = $('#manual-callback').val();
-        Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+        Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
             config['agent'] = {
                 agent: agentOpt.value,
                 initial_access: Object.entries(JSON.parse(window.atob(agentOpt.getAttribute('data-initial_access')))).reduce((acc, [k, v]) => {
@@ -305,7 +305,7 @@ az account show --query id -o tsv</code>
                     return acc;
                 }, {})
             };
-            Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
+            Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'POST', body: JSON.stringify(config)}).then(() => {
                 showCard('review-config');
                 $("#AzureInitialAccess-div .loader").removeClass("loading");
             });
@@ -349,7 +349,7 @@ az account show --query id -o tsv</code>
         let redirectorElem = document.getElementById('select-redirector');
         redirectorElem.selectedIndex = 0;
         redirectorElem.options.length = 2;
-        Basic.fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
+        Requests.fetchOperator('/internal/global/redirectors', {method: 'GET'}).then(res => res.json()).then(redirectors => {
             Object.keys(redirectors).forEach(host => {
                 redirectorElem.append(new Option(host, host));
             });
@@ -359,8 +359,8 @@ az account show --query id -o tsv</code>
             });
             let manualInput = document.getElementById('manual-callback');
             manualInput.addEventListener('input', checkAllAgentFieldsPopulated);
-            Basic.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
-                Basic.fetchGatekeeper(Basic.constructEndpoint(`/agents`, {
+            Requests.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+                Requests.fetchGatekeeper(Basic.constructEndpoint(`/agents`, {
                     email: settings.account.email,
                     token: settings.account.token
                 }), {
@@ -418,7 +418,7 @@ az account show --query id -o tsv</code>
     function showCard(id) {
         $('.AzureInitialAccess-card').map((i, elem) => $(`#${elem.id}`).hide());
         $('#plugin-header').hide();
-        Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+        Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
             switch (id) {
                 case 'review-config':
                     populateReviewCard(config);
@@ -437,7 +437,7 @@ az account show --query id -o tsv</code>
 
     function handleListVmsInResourceGroup(ev) {
         if (ev.target.value !== undefined) {
-            Basic.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
+            Requests.fetchOperator('/plugin/AzureInitialAccess', {method: 'GET'}).then(res => res.json()).then(config => {
                 let vmElem = $("#virtual-machines");
                 vmElem.empty();
                 vmElem.on('change', (ev) => {

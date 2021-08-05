@@ -60,7 +60,7 @@
 </div>
 
 <script>
-    Basic.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+    Requests.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
         const TOOLBOX = path.join(settings.local.workspace, "plugins", "Toolbox", "tools");
         Basic.createStorage([TOOLBOX])
         
@@ -103,7 +103,7 @@
         });
 
         function displayTools(){
-            Basic.fetchOperator('/plugin/toolbox', {
+            Requests.fetchOperator('/plugin/toolbox', {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
                 $('#newTool').val('');
@@ -136,13 +136,13 @@
                             return;
                         }
                         const name = url.split('/').pop().split('.')[0];
-                        Basic.fetchOperator('/plugin/toolbox', {
+                        Requests.fetchOperator('/plugin/toolbox', {
                             method: 'GET'
                         }).then(res => res.json()).then(res => {
                             let tool = {};
                             tool[name] = {'url':url, 'tag':tag};
                             res['tools'] = Object.assign({}, res.tools, tool);
-                            return Basic.fetchOperator('/plugin/toolbox', {
+                            return Requests.fetchOperator('/plugin/toolbox', {
                                 method: 'POST',
                                 body: JSON.stringify(res)
                             })
@@ -156,12 +156,12 @@
         }
 
         function removeTool(name){
-            Basic.fetchOperator('/plugin/toolbox', {
+            Requests.fetchOperator('/plugin/toolbox', {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
                 delete res.tools[name]
                 Basic.deleteDir(path.join(TOOLBOX, name))
-                Basic.fetchOperator('/plugin/toolbox', {
+                Requests.fetchOperator('/plugin/toolbox', {
                     method: 'POST',
                     body: JSON.stringify(res)
                 })

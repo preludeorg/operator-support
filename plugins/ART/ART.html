@@ -24,7 +24,7 @@
   <script>
 
     function patchArtFacts(){
-      Basic.fetchOperator('/plugin/art', {
+      Requests.fetchOperator('/plugin/art', {
         method: 'GET'
       }).then(res => res.json()).then(res => {
         if(res.facts){
@@ -32,7 +32,7 @@
             let temp = res.facts[name];
             res.facts[name] = temp;
           })
-          Basic.fetchOperator('/internal/global/facts', {
+          Requests.fetchOperator('/internal/global/facts', {
             method: 'POST',
             body: JSON.stringify({
               name: 'art',
@@ -58,7 +58,7 @@
                 .filter((file) => file.endsWith('.yml') || file.endsWith('.yaml'))
                 .map(file => convertRedCanary(file).then((procedures) =>
                         procedures.forEach(ttp => {
-                          Basic.fetchOperator('/attack', {
+                          Requests.fetchOperator('/attack', {
                             method: 'POST',
                             body: JSON.stringify(ttp)
                           });
@@ -150,11 +150,11 @@
   }
 
   function flushArtFacts(){
-    Basic.fetchOperator('/plugin/art', {
+    Requests.fetchOperator('/plugin/art', {
       method: 'GET'
     }).then(res => res.json()).then(res => {
       res['facts'] = Object.assign({}, res.facts, ART_FACTS);
-      Basic.fetchOperator('/plugin/art', {
+      Requests.fetchOperator('/plugin/art', {
         method: 'POST',
         body: JSON.stringify(res)
       }).then(patchArtFacts)

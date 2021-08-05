@@ -22,8 +22,8 @@
         grabAvailableAgents()
     })
     function grabAvailableAgents() {
-        Basic.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
-            Basic.fetchGatekeeper(Basic.constructEndpoint(`/agents`, {
+        Requests.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+            Requests.fetchGatekeeper(Basic.constructEndpoint(`/agents`, {
                     email: settings.account.email,
                     token: settings.account.token
                 }), {
@@ -55,7 +55,7 @@
         })
     }
     function downloadAgent(agent, platform, filename) {
-        Basic.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
+        Requests.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
             function getDownloadDir() {
                 switch (os.platform()) {
                     case 'darwin':
@@ -66,7 +66,7 @@
                         return 'C:\\Users\\Public'
                 }
             }
-            Basic.fetchGatekeeper(Basic.constructEndpoint(`/agents/${agent}`, {
+            Requests.fetchGatekeeper(Basic.constructEndpoint(`/agents/${agent}`, {
                     email: settings.account.email,
                     token: settings.account.token,
                     platform: platform
