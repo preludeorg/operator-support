@@ -14,11 +14,11 @@
 
 <script>
     Promise.all([
-        Basic.fetchOperator('/adversary', {
+        Requests.fetchOperator('/adversary', {
             method: 'GET'
         })
         .then(res => res.json()),
-        Basic.fetchOperator('/attack', {
+        Requests.fetchOperator('/attack', {
             method: 'GET'
         })
         .then(res => res.json())
@@ -69,7 +69,7 @@
                 .filter(procedure => (lookup[procedure.technique.id] || {})[procedure.tactic])
                 .map(procedure => procedure.id);
 
-            Basic.fetchOperator(`/adversary`, {
+            Requests.fetchOperator(`/adversary`, {
               method: 'POST',
               body: JSON.stringify({
                 name: 'User Generated Adversary',

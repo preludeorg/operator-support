@@ -15,7 +15,7 @@
 </div>
 <div id="init-plugin">
     <script>
-        Basic.fetchOperator('/plugin/ThemeChange', {
+        Requests.fetchOperator('/plugin/ThemeChange', {
             method: 'GET'
         }).then(res => res.json()).then(config => {
             if(config.background) {
@@ -26,11 +26,11 @@
 </div>
 <script>
     function saveBackground(){
-        Basic.fetchOperator('/plugin/ThemeChange', {
+        Requests.fetchOperator('/plugin/ThemeChange', {
             method: 'GET'
         }).then(res => res.json()).then(config => {
             config.background = $('#theme-background').val();
-            Basic.fetchOperator('/plugin/ThemeChange', {
+            Requests.fetchOperator('/plugin/ThemeChange', {
                 method: 'POST',
                 body: JSON.stringify(config)
             }).then(() => {
