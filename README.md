@@ -16,6 +16,7 @@ This repository contains the following:
 1. Known bugs & feature requests (check the issue tab)
 2. All open-source plugins, which are separate components you can install inside Operator
 3. A collection of tools which work with the Operator ecosystem
+4. Standalone python servers - called translators - which accept agent beacons over one protocol and translate them into an Operator protocol (usually HTTP) so you can build your own supported protocols.
 
 ## Resources
 
