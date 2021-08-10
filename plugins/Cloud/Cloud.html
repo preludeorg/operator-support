@@ -249,7 +249,7 @@
                         instance_count: $('#instance-count').val(),
                         tools: $('#aws-tools [data-tool] option[value="1"]:selected').parents('[data-tool]').toArray().map(t => $(t).attr('data-tool')),
                         config: {
-                            key_name: config.aws.key_name.split('/').slice(-1)[0],
+                            key_name: path.basename(config.aws.key_name),
                             access_key_id: config.aws.access_key_id,
                             secret_access_key: config.aws.secret_access_key
                         }
