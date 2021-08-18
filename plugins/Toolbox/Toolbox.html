@@ -63,7 +63,6 @@
     Requests.fetchOperator('/internal/config/settings', {method: 'GET'}).then(res => res.json()).then(settings => {
         const TOOLBOX = path.join(settings.local.workspace, "plugins", "Toolbox", "tools");
         Basic.createStorage([TOOLBOX])
-
         $(document).ready(function () {
             $('#toolbox-location').text(TOOLBOX).parent().click((ev) => {
               ev.preventDefault();
