@@ -38,6 +38,13 @@
     <h4 id="toolbox-location-container" class="split" style="display: block; background: #111; padding: 20px; border-radius: 6px; cursor: pointer;">My toolbox:
         <span id="toolbox-location" class="main" style="font-family: 'ITC Franklin Gothic Std'; text-transform: none; letter-spacing: normal; font-weight: 100; font-size: 14px; display: block;"></span>
     </h4>
+    <div class="profile-heading-container">
+        <div class="body">
+            <strong class="profile-heading">Highlighted tools</strong>
+            <p>
+                Plugins that have not been updated within six months are highlighted in red and labeled 'STALE'
+                for your discretion.
+            </p>
     <br>
     <input placeholder="Enter the GitHub address of a tool you want" id="newTool" />
     <br>
@@ -118,9 +125,8 @@
                         template.find('#tool-actions').append($(`<a href="#">Log</a>`).click(ev => commitHistory(tool)))
                         template.find('#tool-actions').append($(`<a href="#">Remove</a>`).click(ev => removeTool(tool)))
                         template.find('#tool-tag').text(res.tools[tool].tag)
-                        lastUpdated(tool);
                         template.show()
-                        $('#tools').append(template)
+                        lastUpdated(tool, template);
                     })
                 }
             })
@@ -200,9 +206,24 @@
             })
         }
 
-        function lastUpdated(name){
-            exec(`git log -n1 --pretty='format:%cd'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
-                $('#tool-'+name).find('#tool-url').text(`Last updated: ${stdout}`);
+        function lastUpdated(tool, template){
+            exec(`git log -n1 --pretty='format:%cd'`, {cwd: path.join(TOOLBOX, tool)}, (error, stdout, stderr) => {
+                $('#tools').append(template)
+                $('#tool-'+tool).find('#tool-url').text(`Last Updated: ${stdout}`);
+                let compareDate = new Date;
+                compareDate.setMonth(compareDate.getMonth() - 6);
+                if (Date.parse(stdout) < Date.parse(compareDate)){
+                    $(`#tool-${tool}`).css({
+                    borderColor: 'rgba(255, 0, 0, 0.25)'
+                    })
+                    $(`#tool-${tool}`).find(`#tool-name`).text(tool).append($(`<span style=margin-left:10px><b>Stale <span style=margin-left:1px></b>`).css({
+                    display: 'inline-block',
+                    background: 'rgba(255, 0, 0, 0.25)',
+                    color: 'rgba(255, 200, 200, 0.5)',
+                    padding: '1px 2px',
+                    borderRadius: '4px'
+                    }))
+                }
             })
         }
     });
