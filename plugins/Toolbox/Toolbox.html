@@ -205,6 +205,18 @@
                 }, 250);
             });
         }
+        
+        function commitHistory(name){
+            exec(`git log -n25 --pretty='format:%cd %s'`, {cwd: path.join(TOOLBOX, name)}, (error, stdout, stderr) => {
+                launchSidebar($('#right-sidebar-readme'), (sidebar) => {
+                    sidebar.find('.loader').addClass('loading');
+                    sidebar.find('#readme').html(`<pre>${stdout}</pre>`);
+                    setTimeout(() => {
+                        sidebar.find('.loader').removeClass('loading');
+                    }, 250);
+                });
+            })
+        }
 
         function lastUpdated(tool, template){
             exec(`git log -n1 --pretty='format:%cd'`, {cwd: path.join(TOOLBOX, tool)}, (error, stdout, stderr) => {
