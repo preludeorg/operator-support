@@ -24,7 +24,8 @@
   <script>
 
     function patchArtFacts(){
-      Requests.fetchOperator('/plugin/ART'
+      Requests.fetchOperator('/plugin/ART', {
+        method: 'GET'
       }).then(res => res.json()).then(res => {
         if(res.facts){
           Object.keys(res.facts).forEach(name => {
