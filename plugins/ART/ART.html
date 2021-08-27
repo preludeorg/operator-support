@@ -24,8 +24,7 @@
   <script>
 
     function patchArtFacts(){
-      Requests.fetchOperator('/plugin/Art', {
-        method: 'GET'
+      Requests.fetchOperator('/plugin/ART'
       }).then(res => res.json()).then(res => {
         if(res.facts){
           Object.keys(res.facts).forEach(name => {
@@ -150,11 +149,11 @@
   }
 
   function flushArtFacts(){
-    Requests.fetchOperator('/plugin/Art', {
+    Requests.fetchOperator('/plugin/ART', {
       method: 'GET'
     }).then(res => res.json()).then(res => {
       res['facts'] = Object.assign({}, res.facts, ART_FACTS);
-      Requests.fetchOperator('/plugin/Art', {
+      Requests.fetchOperator('/plugin/ART', {
         method: 'POST',
         body: JSON.stringify(res)
       }).then(patchArtFacts)
