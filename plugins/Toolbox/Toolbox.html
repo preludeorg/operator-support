@@ -110,7 +110,7 @@
         });
 
         function displayTools(){
-            Requests.fetchOperator('/plugin/toolbox', {
+            Requests.fetchOperator('/plugin/Toolbox', {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
                 $('#newTool').val('');
@@ -126,11 +126,11 @@
                         template.find('#tool-actions').append($(`<a href="#">Remove</a>`).click(ev => removeTool(tool)))
                         template.find('#tool-tag').text(res.tools[tool].tag).on('blur', ev => {
                             const tag = template.find('#tool-tag').text()
-                            Requests.fetchOperator('/plugin/toolbox', {
+                            Requests.fetchOperator('/plugin/Toolbox', {
                                 method: 'GET'
                             }).then(res => res.json()).then(res => {
                                 res.tools[tool].tag = tag;
-                                return Requests.fetchOperator('/plugin/toolbox', {
+                                return Requests.fetchOperator('/plugin/Toolbox', {
                                     method: 'POST',
                                     body: JSON.stringify(res)
                                 })
@@ -154,13 +154,13 @@
                             return;
                         }
                         const name = url.split('/').pop().split('.')[0];
-                        Requests.fetchOperator('/plugin/toolbox', {
+                        Requests.fetchOperator('/plugin/Toolbox', {
                             method: 'GET'
                         }).then(res => res.json()).then(res => {
                             let tool = {};
                             tool[name] = {'url':url, 'tag':tag};
                             res['tools'] = Object.assign({}, res.tools, tool);
-                            return Requests.fetchOperator('/plugin/toolbox', {
+                            return Requests.fetchOperator('/plugin/Toolbox', {
                                 method: 'POST',
                                 body: JSON.stringify(res)
                             })
@@ -174,12 +174,12 @@
         }
 
         function removeTool(name){
-            Requests.fetchOperator('/plugin/toolbox', {
+            Requests.fetchOperator('/plugin/Toolbox', {
                 method: 'GET'
             }).then(res => res.json()).then(res => {
                 delete res.tools[name]
                 Basic.deleteDir(path.join(TOOLBOX, name))
-                Requests.fetchOperator('/plugin/toolbox', {
+                Requests.fetchOperator('/plugin/Toolbox', {
                     method: 'POST',
                     body: JSON.stringify(res)
                 })
