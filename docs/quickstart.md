@@ -10,7 +10,7 @@ This quick start is meant to provide you with a running Operator Controller and 
 
 You'll need 1 Controller and you'll need 1 victim system.
 
-The Controller can be Windows, Linux or macOS. The victim can be Windows, Linux, or Darwin.
+The Controller can be Windows, Linux, or macOS. The victim can be Windows, Linux, or Darwin.
 
 ### Controller
 
@@ -47,7 +47,7 @@ cd pneuma
 go run main.go -contact http -address http://[your-controller-ip]:3391
 ```
 
-**macOS** (you'll want to use Homebrew (`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`))
+**macOS** (you'll need to have [Homebrew installed](https://brew.sh/)).
 
 ```
 brew install git golang
@@ -101,9 +101,13 @@ If you click on the implant reporting in, you can click on the cog wheel in the 
 
 Next, you can click on "Deploy an adversary" and then use the dropdown to select what "adversary" to emulate. In this example, we'll use "File Hunter". Click "Build Adversary".
 
-![Deploy an adversary](images/operator-file-hunter.png)
+![Build an adversary](images/operator-file-hunter.png)
 
-Finally, click the "Deploy" button and the "adversary" will be deployed to the agent and return the results. Depending on the adversary you deploy this could take a few minutes for results. Results have been returned when the indicator light next to the implant turns green.
+Finally, click the "Deploy" button and the "adversary" will be deployed to the agent and return the results. Depending on the adversary you deploy this could take a few minutes for results.
+
+![Deploy an adversary](images/operator-deploy.png)
+
+Results have been returned when the indicator light next to the implant turns green.
 
 ![Indicator Light](images/operator-indicator-light.png)
 
