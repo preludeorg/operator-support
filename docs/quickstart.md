@@ -111,13 +111,14 @@ Results have been returned when the indicator light next to the implant turns gr
 
 ![Indicator Light](images/operator-indicator-light.png)
 
-Explore additional adversaries.
+Operator has a tremendous amount of other adversaries, capabilities, and configurations to explore. Check out the Resources section below for more examples and use cases.
+
+Happy hunting!
 
 ## Resources
 
 The Prelude development & security teams run several supporting resources for the community:
 
-- A [quick start guide](docs/quick-start.md) to get Operator running with a single Pneuma agent.
 - A [Discord server](https://discord.gg/NWURE99JzE) to interact with the team.
 - A [YouTube video library](https://www.youtube.com/channel/UCZyx-PDZ_k7Vuzyqr4-qK9A) containing tutorials and use-cases.
 - A [blog](https://feed.prelude.org), where we post on general security and specific Operator topics.
