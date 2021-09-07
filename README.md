@@ -3,6 +3,8 @@
 [![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fpreludeorg%2Foperator-support%2Freleases%2Flatest)](https://github.com/preludeorg/operator-support/releases)
 # Operator
 
+### This repository is the spot to report bugs or submit feature requests.
+
 Operator is an autonomous red team C2 platform, built by [Prelude](https://prelude.org). It is designed for red, purple and blue teamers to conduct realistic threat assessments. Using the desktop application, you can deploy agents on remote computers and launch custom adversary profiles against them to identify the holes that antivirus programs & vulnerability scanners are not designed to locate.
 
 > Watch our quick [introduction video](https://www.youtube.com/watch?v=Hz8K-jdqpBY)
@@ -10,8 +12,6 @@ Operator is an autonomous red team C2 platform, built by [Prelude](https://prelu
 You can download the latest copy of the application [here](https://www.prelude.org/download/current), for either MacOS, Windows or Linux.
 
 > Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Check out the [Pink Badge](https://www.prelude.org/training/pinkbadge) for more details.
-
-This repository is the spot to report bugs or submit feature requests.
 
 ## Resources
 
