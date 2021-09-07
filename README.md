@@ -11,12 +11,7 @@ You can download the latest copy of the application [here](https://www.prelude.o
 
 > Did you know that the team at Prelude runs free red team training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Check out the [Pink Badge](https://www.prelude.org/training/pinkbadge) for more details.
 
-This repository contains the following:
-
-1. Known bugs & feature requests (check the issue tab)
-2. All open-source plugins, which are separate components you can install inside Operator
-3. A collection of tools which work with the Operator ecosystem
-4. Standalone python servers - called translators - which accept agent beacons over one protocol and translate them into an Operator protocol (usually HTTP) so you can build your own supported protocols.
+This repository is the spot to report bugs or submit feature requests.
 
 ## Resources
 

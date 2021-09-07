@@ -1,7 +1,3 @@
-![alt text](../background.png)
-
-[![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fpreludeorg%2Foperator-support%2Freleases%2Flatest)](https://github.com/preludeorg/operator-support/releases)
-
 # Quick Start Guide
 
 This quick start is meant to provide you with a running Operator Controller and a single remote [Pneuma](https://github.com/preludeorg/pneuma) agent. This will use all default settings. Please explore additional capabilities and features and contribute new guides.
@@ -114,13 +110,3 @@ Results have been returned when the indicator light next to the implant turns gr
 Operator has a tremendous amount of other adversaries, capabilities, and configurations to explore. Check out the Resources section below for more examples and use cases.
 
 Happy hunting!
-
-## Resources
-
-The Prelude development & security teams run several supporting resources for the community:
-
-- A [Discord server](https://discord.gg/NWURE99JzE) to interact with the team.
-- A [YouTube video library](https://www.youtube.com/channel/UCZyx-PDZ_k7Vuzyqr4-qK9A) containing tutorials and use-cases.
-- A [blog](https://feed.prelude.org), where we post on general security and specific Operator topics.
-- [Pneuma](https://github.com/preludeorg/pneuma): A cross-platform GoLang agent that connects to Operator and executes attacks.
-- [Community](https://github.com/preludeorg/community): A collection of ATT&CK-classified procedures which Operator can send to agents, like Pneuma, to execute.
