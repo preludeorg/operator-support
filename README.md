@@ -21,5 +21,4 @@ The Prelude development & security teams run several supporting resources for th
 - A [Discord server](https://discord.gg/NWURE99JzE) to interact with the team.
 - A [YouTube video library](https://www.youtube.com/channel/UCZyx-PDZ_k7Vuzyqr4-qK9A) containing tutorials and use-cases.
 - A [blog](https://feed.prelude.org), where we post on general security and specific Operator topics.
-- [Pneuma](https://github.com/preludeorg/pneuma): A cross-platform GoLang agent that connects to Operator and executes attacks.
-- [Community](https://github.com/preludeorg/community): A collection of ATT&CK-classified procedures which Operator can send to agents, like Pneuma, to execute.
+- [Community Bucket](https://github.com/preludeorg/community-bucket): A collection of ATT&CK-classified procedures (TTPs), agents, payloads, tools, training modules - all of which get loaded into Operator each time you start. Consider contributing!
