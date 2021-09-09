@@ -17,7 +17,7 @@ You can download the latest copy of the application [here](https://www.prelude.o
 
 When you start Operator, your app loads in our [community bucket](https://github.com/preludeorg/community-bucket) in order to populate your environment with hundreds of open-source TTPs, payloads, agents, tools, training modules and more. We encourage contributions, so if you'd like to add TTPs for other Operator members, publish your own agents or come up with a new training flag for any of the programs - submit a pull request!
 
-## 
+## Resources 
 
 The Prelude development & security teams run several supporting resources for the community:
 
