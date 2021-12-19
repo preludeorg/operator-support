@@ -64,12 +64,13 @@ Ready to kick the tires with Operator? Operator contains a built-in capture the 
 
 > Operator acts as a server for remote agents (not on localhost) to send in links. By default, Operator serves on localhost only.
 
-1. Change Operator's IP address from localhost to your computer's local IP address. This will allow other computers's on your network to reach Operator's listening posts at ports 2323 (TCP), 4545 (UDP) and 3391 (HTTP).
+1. Change Operator's IP address from localhost to your computer's local IP address. You can make this change by clicking into the network settings (wireless icon). Doing so will allow other computers's on your network to reach Operator's listening posts at ports 2323 (TCP), 4545 (UDP) and 3391 (HTTP).
 2. Download a copy of the Pneuma agent by clicking on the agent icon from the operate section. [Pneuma](https://github.com/preludeorg/pneuma) is Prelude's default open-source agent.
-3. (optional) Copy Pnuema to another computer in your home network. 
-4. Start Pneuma like this, replacing LOCAL.IP with the IP address from step 1: ```./pneuma-darwin -name boogeyma -range red -address LOCAL.IP:2323```
-5. Inside Operator, click the "ranges" drop down. You should see a new "red" range. Select it and you should see your new agent, named boogeyman.
-6. Deploy any change against your new agent.
+3. (optional) Copy Pnuema to any other computer with internet access.
+4. (optional) If you did the step above you'll need to ensure Operator can receive links from agents over the internet. You can do this by clicking into the [Connect section](https://www.youtube.com/watch?v=St1GvE40-9Q) and deploying a redirector.
+5. Start Pneuma like this, replacing LOCAL.IP with the IP address from step 1: ```./pneuma-darwin -name boogeyma -range red -address LOCAL.IP:2323```. 
+6. Inside Operator, click the "ranges" drop down. You should see a new "red" range. Select it and you should see your new agent, named boogeyman.
+7. Deploy any change against your new agent.
 
 ![alt text](images/download.png)
 
