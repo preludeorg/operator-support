@@ -1,4 +1,4 @@
-![alt text](background.png)
+![alt text](images/home.png)
 
 [![Release](https://img.shields.io/badge/dynamic/json?color=blue&label=Release&prefix=v&query=tag_name&url=https%3A%2F%2Fapi.github.com%2Frepos%2Fpreludeorg%2Foperator-support%2Freleases%2Flatest)](https://github.com/preludeorg/operator-support/releases)
 # Operator
@@ -21,7 +21,63 @@ When you start Operator, your app loads in our [community](https://github.com/pr
 
 The Prelude development & security teams run several supporting resources for the community:
 
-- A [quick start guide](docs/quickstart.md) to get Operator running with a single Pneuma agent.
 - A [Discord server](https://discord.gg/NWURE99JzE) to interact with the team.
 - A [YouTube video library](https://www.youtube.com/channel/UCZyx-PDZ_k7Vuzyqr4-qK9A) containing tutorials and use-cases.
 - A [blog](https://feed.prelude.org), where we post on general security and specific Operator topics.
+- Details about our [weekly TTP releases](https://chains.prelude.org).
+
+## Quick start
+
+Ready to kick the tires with Operator? Operator contains a built-in capture the flag training program to teach you all the bells & whistles but the guide below will walk you through the basics.
+
+### Installation
+
+> Operator is a compiled Electron/NodeJS app.
+
+1. Head to https://prelude.org and download a copy of Operator for your operating system.
+2. Double-click the download to install Operator the same as any other desktop app.
+3. Open Operator. You'll be created with the main dashboard, which is where you'll deploy adversaries and watch the results stream in. 
+
+### Terminology detour
+
+- Agents are the Remote Access Trojans (RATs) which ship with Operator. Prelude supports several agents, written in several different languages, and there are additional variants built in the open source.
+- ThirdEye is a NodeJS agent that is built into Operator itself. Every time you open Operator you'll be greeted by your ThirdEye agent, which is named after your computer's hostname. 
+- A range is a collection of agents. 
+- Tactics, Techniques and Procedures (TTPs) - often referred to as just "procedures" inside Operator - are the individual attacks you can send to your agents in order to test the security of an endpoint. 
+- Chains are sets of TTPs which represent a subset of a real adversary kill chain. Prelude's Professional license includes a subscription to "TTP Tuesday", which is weekly chain release. 
+- Adversaries are sets of chains, often emulating specific threat actors. 
+- A link is the result (beacon) which the agent returns to Operator after running a TTP. A link contains properties like request, response, PID and status (code).
+- An operation is the full set of links that you deployed against a range of agents.
+
+### Deploy an agent (local)
+
+> When running an operation, keep an eye on the "skipped" button. Clicking this will show you the procedures from your chain that weren't sent to your agent. Clicking on each skipped row will explain why.
+
+1. Using the filter at the top-left, select any available chain. 
+2. Click the edit icon to view the procedures within the selected chain. 
+3. Click deploy. This will send the chain to all agents in your "home" range, which is just your local ThirdEye agent right now.
+4. Within a few seconds you should see links start streaming into your agent's dashboard. Click on any row to see the link's properties. 
+
+![alt text](images/deploy.png)
+
+### Deploy an agent (remote)
+
+> Operator acts as a server for remote agents (not on localhost) to send in links. By default, Operator serves on localhost only.
+
+1. Change Operator's IP address from localhost to your computer's local IP address. This will allow other computers's on your network to reach Operator's listening posts at ports 2323 (TCP), 4545 (UDP) and 3391 (HTTP).
+2. Download a copy of the Pneuma agent by clicking on the agent icon from the operate section. [Pneuma](https://github.com/preludeorg/pneuma) is Prelude's default open-source agent.
+3. (optional) Copy Pnuema to another computer in your home network. 
+4. Start Pneuma like this, replacing LOCAL.IP with the IP address from step 1: ```./pneuma-darwin -name boogeyma -range red -address LOCAL.IP:2323```
+5. Inside Operator, click the "ranges" drop down. You should see a new "red" range. Select it and you should see your new agent, named boogeyman.
+6. Deploy any change against your new agent.
+
+![alt text](images/download.png)
+
+### Where to go from here?
+
+1. Check out the Editor section. This is an Integrated Development Environment for building your own procedures or adversaries. 
+2. Drop into the Train section to take any of the free, interactive training programs built into Operator. 
+3. Head into the Connect plugin to provision redirectors and test ranges to practice against. 
+4. Advanced user? Go to the Plugins section to build your own extensions to the platform.
+5. Pop into our [Discord server](https://discord.gg/NWURE99JzE) where we have an active Operator community.
+
