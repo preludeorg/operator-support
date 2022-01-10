@@ -45,7 +45,6 @@ Ready to kick the tires with Operator? Operator contains a built-in capture the 
 - A range is a collection of agents. 
 - Tactics, Techniques and Procedures (TTPs) - often referred to as just "procedures" inside Operator - are the individual attacks you can send to your agents in order to test the security of an endpoint. 
 - Chains are sets of TTPs which represent a subset of a real adversary kill chain. Prelude's Professional license includes a subscription to "TTP Tuesday", which is weekly chain release. 
-- Adversaries are sets of chains, often emulating specific threat actors. 
 - A link is the result (beacon) which the agent sends to Operator after running a TTP. A link contains properties like request, response, PID and status (code).
 - An operation is the full set of links after deploying a chain/adversary against a range of agents.
 
