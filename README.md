@@ -56,7 +56,7 @@ Whether you are using Operator for the first time or you are checking out the ne
 1. Select the default ThirdEye agent. 
 2. Click "Launch Chain".
 3. Type the name of a Chain in the "Find an attack chain to deploy" (File Hunter is recommended) 
-4. Click deploy. This will send the chain to the selected agent.
+4. Click "Deploy". This will send the chain to the selected agent.
 5. Within a few seconds you should see results starting to stream into your agent's result log. Click on any row to view additional information on the result.
     
 ![alt text](images/deploy.png)
