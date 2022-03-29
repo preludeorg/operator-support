@@ -36,6 +36,7 @@ The Prelude development & security teams run several supporting resources for th
 - Redirector - A redirector is a Linux server running a headless version of Operator. Your local Operator instance will connect to the redirector which acts as a proxy for interating with agents. This allows you to manage agents hosted outside your network, without having to expose your local Operator instance.
 - Fact - A fact is a key/value pair. There are three different types of facts: Automatic, Discovered, and Custom. Automatic facts are immutable, discovered facts are generated from the output of a TTP, custom facts are defined by the user. Some TTPs may require certain custom facts to be present before attempting to execute.
 - Task (Link) - A Task is a beacon which the agent receives from Operator as well as the result it sends to Operator. A link contains properties like the initial request, the agent's response, the process PID, and the status (code).
+- Connect - Connect is a plugin that offers three functions: deploying redirectors so that agents can reach your Operator instance over the internet, deploying test computers for you to practice attacks on and the ability to link Operator to your teammates so you can share agents.
 - ThirdEye - ThirdEye is a Node.js agent that is built directly into Operator. When Operator starts, ThirdEye automatically launches and beacons into your Home range with the username of the user running the desktop application. It only communicates locally to Operator and is designed for testing TTPs out before deploying them in the wild. ThirdEye does not support reverse shells, nor can you delete this agent.
 - Pneuma - Our most popular open-source agent is called Pneuma, a Go agent which supports all major operating systems and 3 different protocols (TCP, UDP, HTTP). Pneuma is capable of executing nearly all TTPs and chains loaded into Operator, along with built-in support for reverse shells (when connected over TCP). [Source code is available here.](https://github.com/preludeorg/pneuma)
 
@@ -93,8 +94,8 @@ Whether you are using Operator for the first time or you are checking out the ne
 
 ## Where to go from here?
 
-1. Create your own TTPs or create your own chain using some of the hundreds of TTPs already present. This is an Integrated Development Environment for building your own procedures or adversaries. 
+1. Create your own TTPs or create your own chain using one of the 200+ open-source TTPs or utilize one of the 450+ TTPs available with our professional subscription. 
 2. Click on the Train section to take any of the free, interactive training programs built into Operator. 
-3. Head into the Connect section to provision redirectors and test ranges to practice against. 
+3. Head into the Connect section that provides a point-and-click solution for provisioning redirectors and deploying test computers on your cloud platform. This allows you to easily deploy a lab environment so you can test TTPs and chains outside your current network. 
 4. Advanced user? Go to Settings -> Plugins section to build your own extensions to the platform.
 5. Pop into our [Discord server](https://discord.gg/NWURE99JzE) where we have an active Operator community.
