@@ -11,8 +11,6 @@ Operator is production-ready infrastructure for continuously testing your securi
 
 You can download the latest copy of the application [here](https://www.prelude.org/download/current) for MacOS, Windows or Linux.
 
-> Did you know that the team at Prelude runs a free cybersecurity training programs as part of our open-source outreach? We teach IT/InfoSec/DevOps/defenders/software engineers how to red team, so they can apply practical techniques to their day jobs. Check out the [Pink Badge](https://www.prelude.org/training) for more details.
-
 ## Community
 
 When you start Operator, your app loads in the [community](https://github.com/preludeorg/community) resources in order to populate your environment with hundreds of open-source TTPs, payloads, agents, tools, training modules and more. We encourage contributions, so if you'd like to add TTPs for other Operator members, publish your own agents or come up with a new training flag for any of the programs - submit a pull request!
@@ -51,15 +49,8 @@ Whether you are using Operator for the first time or you are checking out the ne
 
 ## Selecting an Agent for your Operation.
 
-> Using an agent other than ThirdEye (which is baked into Operator) can allow access to additional features (Other protocol support, reverse shells, etc...). You can also write your own agent. Find details in the docs.
+> Using an agent other than ThirdEye (which is baked into the app) allows you to test/control other computers.
 
-1. You can download one of Prelude's other agents by clicking the "Add Agents" button in Operator
+1. Download one of Prelude's other agents by clicking the "Add Agents" button in Operator
 2. Launch the agent. (Operator runs on localhost by default, most agents are designed to automatically connect to Operator when executed)
-3. Your agent should now show up in the list of agents on the main page.
-
-## Where to go from here?
-
-* Create your own TTPs and chains.
-* Run a headless (API-only) version of Operator and connect your desktop app to it.
-* Click on the Train section to take the free, interactive training program built into Operator. 
-* Pop into our [Discord server](https://discord.gg/NWURE99JzE) where we have an active Operator community.
+3. Your agent should now show up in the list of agents on the side panel.
